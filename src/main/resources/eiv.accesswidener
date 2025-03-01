@@ -1,0 +1,10 @@
+accessWidener v2 named
+
+accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/Ingredient values Lnet/minecraft/core/HolderSet;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
+accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStack;
+
+accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl

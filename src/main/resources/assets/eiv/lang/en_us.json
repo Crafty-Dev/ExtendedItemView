@@ -1,0 +1,17 @@
+{
+  "view.eiv.type.crafting": "Shaped Crafting",
+  "view.eiv.tags": "Accepts any",
+  "view.eiv.type.shapeless": "Shapeless Crafting",
+  "view.eiv.type.smelting": "Smelting",
+  "key.categories.eiv": "Extended ItemView",
+  "key.eiv.usage": "Show Usage",
+  "key.eiv.recipe": "Show Recipes",
+  "view.eiv.type.blasting": "Blasting",
+  "view.eiv.type.smoking": "Smoking",
+  "view.eiv.type.stonecutter": "Stonecutting",
+  "view.eiv.type.smithing": "Smithing",
+  "view.eiv.type.campfire": "Campfire Cooking",
+  "eiv.fluid.unit": "mb",
+  "commands.eiv.reloaded": "Reload success"
+
+}

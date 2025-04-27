@@ -6,7 +6,9 @@ import de.crafty.eiv.api.recipe.IEivViewRecipe;
 import de.crafty.eiv.api.recipe.IEivRecipeViewType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -51,10 +53,14 @@ public class RecipeViewMenu extends AbstractContainerMenu {
     private RecipeViewScreen viewScreen;
     private final Screen parentScreen;
 
+    private final List<RecipeTransferData> transferData;
+
+
     public RecipeViewMenu(Screen parentScreen, int containerId, Inventory inventory, List<? extends IEivViewRecipe> recipes, ItemStack origin) {
         super(ExtendedItemViewClient.RECIPE_VIEW_MENU, containerId);
 
         this.parentScreen = parentScreen;
+        this.transferData = new ArrayList<>();
 
         this.origin = origin;
         this.additionalStackModifiers = new HashMap<>();
@@ -104,6 +110,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
     public RecipeViewMenu(int containerId, Inventory inventory) {
         this(null, containerId, inventory, IEivViewRecipe.PLACEHOLDER, ItemStack.EMPTY);
     }
+
 
     public Screen getParentScreen() {
         return this.parentScreen;
@@ -207,6 +214,9 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             recipe.getIngredients().forEach(slotContent -> slotContent.bindOrigin(this.origin));
             recipe.getResults().forEach(slotContent -> slotContent.bindOrigin(this.origin));
 
+            recipe.getIngredients().forEach(slotContent -> slotContent.setType(SlotContent.Type.INGREDIENT));
+            recipe.getResults().forEach(slotContent -> slotContent.setType(SlotContent.Type.RESULT));
+
             SlotDefinition slotDefinition = new SlotDefinition();
             this.viewType.placeSlots(slotDefinition);
             for (Slot slot : slotDefinition.getItemSlots()) {
@@ -229,6 +239,256 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
 
         }
+
+
+        this.transferData.clear();
+        for (int i = 0; i < this.getCurrentDisplay().size(); i++) {
+            this.transferData.add(this.checkMatchingContent(i));
+        }
+
+        if (this.viewScreen != null)
+            this.viewScreen.checkGui();
+    }
+
+    public List<RecipeTransferData> getTransferData() {
+        return this.transferData;
+    }
+
+    private RecipeTransferData checkMatchingContent(int displayId) {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        if (minecraft.player == null)
+            return RecipeTransferData.EMPTY;
+
+        IEivViewRecipe currentLooking = this.getCurrentDisplay().get(displayId);
+
+        RecipeViewMenu.SlotFillContext context = new RecipeViewMenu.SlotFillContext();
+        currentLooking.bindSlots(context);
+
+        LocalPlayer player = minecraft.player;
+
+        NonNullList<ItemStack> playerInvCache = NonNullList.withSize(player.getInventory().items.size(), ItemStack.EMPTY);
+        for (int slot = 0; slot < playerInvCache.size(); slot++)
+            playerInvCache.set(slot, player.getInventory().getItem(slot).copy());
+
+
+        RecipeTransferData.Builder dataBuilder = new RecipeTransferData.Builder();
+        context.getContents().keySet().stream().filter(slot -> context.getContents().get(slot).getType() != SlotContent.Type.RESULT).forEach(dataBuilder::noticeSlot);
+
+        HashMap<Integer, List<ItemStack>> validAndAvailableContent = new HashMap<>();
+
+        //Filter relevant items to check and exclude air + results
+        for (int slot : context.getContents().keySet()) {
+
+            SlotContent content = context.getContents().get(slot);
+
+            if (content.getType() == SlotContent.Type.RESULT)
+                continue;
+
+            if (content.isEmpty()) {
+                dataBuilder.findContent(slot, new HashMap<>());
+                continue;
+            }
+
+            List<ItemStack> availableItems = new ArrayList<>();
+            content.getValidContents().forEach(stack -> {
+                if (playerInvCache.stream().anyMatch(stack1 -> stack1.is(stack.getItem())))
+                    availableItems.add(stack);
+            });
+
+            validAndAvailableContent.put(slot, availableItems);
+        }
+
+
+        List<Integer> slots = new ArrayList<>();
+        context.getContents().forEach((slot, slotContent) -> {
+            if (slotContent.getType() != SlotContent.Type.RESULT)
+                slots.add(slot);
+        });
+
+
+        HashMap<Integer, HashMap<Integer, ItemStack>> bestMatch = new HashMap<>();
+        this.check(slots, 0, validAndAvailableContent, new HashMap<>(), bestMatch, playerInvCache);
+        bestMatch.forEach(dataBuilder::findContent);
+
+        RecipeTransferData transferData = dataBuilder.build();
+
+        if (transferData.isSuccess()) {
+
+            HashMap<Integer, ItemStack> requiredStacks = new HashMap<>();
+            for (int recipeSlot : transferData.getUsedPlayerSlots().keySet()) {
+
+                HashMap<Integer, ItemStack> usedSlots = transferData.getUsedPlayerSlots().get(recipeSlot);
+
+                ItemStack required = usedSlots.values().stream().findFirst().orElseGet(() -> ItemStack.EMPTY).copy();
+
+                int amount = 0;
+                for (ItemStack stack : usedSlots.values()) {
+                    amount += stack.getCount();
+                }
+
+                if (!required.isEmpty())
+                    requiredStacks.put(recipeSlot, required.copyWithCount(amount));
+            }
+
+            boolean checking = true;
+            HashMap<Integer, HashMap<Integer, ItemStack>> stackable = new HashMap<>();
+
+            int runs = 0;
+
+            while (checking) {
+
+                for (int recipeSlot : requiredStacks.keySet()) {
+
+                    if ((runs + 1) * requiredStacks.get(recipeSlot).getCount() > requiredStacks.get(recipeSlot).getMaxStackSize() - requiredStacks.get(recipeSlot).getCount()) {
+                        checking = false;
+                        break;
+                    }
+                }
+
+                if (!checking)
+                    break;
+
+                HashMap<Integer, HashMap<Integer, ItemStack>> currentStackable = new HashMap<>();
+
+                for (int recipeSlot : requiredStacks.keySet()) {
+
+                    ItemStack requiredStack = requiredStacks.get(recipeSlot);
+
+                    HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack);
+                    if (found.isEmpty()) {
+                        checking = false;
+                        break;
+                    }
+
+                    currentStackable.put(recipeSlot, found);
+                }
+
+                if (checking) {
+                    //Add to complete map
+                    currentStackable.forEach((recipeSlot, usedPlayerSlots) -> {
+
+                        HashMap<Integer, ItemStack> presentStackable = stackable.getOrDefault(recipeSlot, new HashMap<>());
+
+                        usedPlayerSlots.forEach((playerSlot, stack) -> {
+                            if (presentStackable.containsKey(playerSlot))
+                                presentStackable.put(playerSlot, stack.copyWithCount(presentStackable.get(playerSlot).getCount() + stack.getCount()));
+                            else
+                                presentStackable.put(playerSlot, stack);
+                        });
+
+                        stackable.put(recipeSlot, presentStackable);
+                    });
+
+                    runs++;
+                }
+            }
+
+
+            HashMap<Integer, HashMap<Integer, ItemStack>> stackedMatch = new HashMap<>();
+            bestMatch.forEach((recipeSlot, usedPlayerSlots) -> {
+
+                HashMap<Integer, ItemStack> playerSlots = new HashMap<>();
+
+                usedPlayerSlots.forEach((playerSlot, stack) -> {
+                    playerSlots.put(playerSlot, stack.copy());
+                });
+                stackedMatch.put(recipeSlot, playerSlots);
+
+            });
+
+            stackable.forEach((recipeSlot, usedPlayerSlots) -> {
+
+                usedPlayerSlots.forEach((playerSlot, stack) -> {
+
+                    if(stackedMatch.get(recipeSlot).containsKey(playerSlot))
+                        stackedMatch.get(recipeSlot).put(playerSlot, stack.copyWithCount(stackedMatch.get(recipeSlot).get(playerSlot).getCount() + stack.getCount()));
+                    else
+                        stackedMatch.get(recipeSlot).put(playerSlot, stack);
+
+                });
+
+            });
+
+            RecipeTransferData.Builder stackedBuilder = dataBuilder.duplicate();
+
+            stackedMatch.forEach(stackedBuilder::findContent);
+            transferData.setStackedData(stackedBuilder.build());
+        }
+
+        return transferData;
+    }
+
+
+    private void check(List<Integer> slots, int currentSlotIndex, HashMap<Integer, List<ItemStack>> validAndAvailableContent, HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots, HashMap<Integer, HashMap<Integer, ItemStack>> bestMatch, NonNullList<ItemStack> playerInvCache) {
+
+        if (currentSlotIndex >= slots.size() || bestMatch.size() == slots.size())
+            return;
+
+        List<ItemStack> validStacks = validAndAvailableContent.get(slots.get(currentSlotIndex));
+
+        for (ItemStack requiredStack : validStacks) {
+
+            HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack);
+
+            if (!found.isEmpty()) {
+                usedPlayerSlots.put(slots.get(currentSlotIndex), found);
+                if (usedPlayerSlots.size() > bestMatch.size())
+                    bestMatch.putAll(usedPlayerSlots);
+
+                this.check(slots, currentSlotIndex + 1, validAndAvailableContent, usedPlayerSlots, bestMatch, playerInvCache);
+            }
+        }
+        this.check(slots, currentSlotIndex + 1, validAndAvailableContent, usedPlayerSlots, bestMatch, playerInvCache);
+
+    }
+
+    private HashMap<Integer, ItemStack> invCheckAndFind(NonNullList<ItemStack> playerInvCache, ItemStack requiredStack) {
+
+        HashMap<Integer, ItemStack> usedPlayerSlots = new HashMap<>();
+        int requiredAmount = requiredStack.getCount();
+
+        for (int playerSlot = 0; playerSlot < playerInvCache.size(); playerSlot++) {
+
+            if (requiredAmount <= 0)
+                break;
+
+            ItemStack playerStack = playerInvCache.get(playerSlot);
+            ItemStack foundStack = playerStack.copy();
+
+            if (!playerStack.is(requiredStack.getItem()))
+                continue;
+
+            int prevReq = requiredAmount;
+            requiredAmount -= Math.min(requiredAmount, playerStack.getCount());
+
+            playerStack.setCount(playerStack.getCount() - (prevReq - requiredAmount));
+            if (playerStack.getCount() <= 0)
+                playerInvCache.set(playerSlot, ItemStack.EMPTY);
+
+            foundStack.setCount(prevReq - requiredAmount);
+            usedPlayerSlots.put(playerSlot, foundStack);
+
+        }
+
+        if (requiredAmount == 0)
+            return usedPlayerSlots;
+        else {
+            this.returnToCache(usedPlayerSlots, playerInvCache);
+
+            return new HashMap<>();
+        }
+    }
+
+    private void returnToCache(HashMap<Integer, ItemStack> usedPlayerSlots, NonNullList<ItemStack> playerInvCache) {
+        usedPlayerSlots.forEach((playerSlot, stack) -> {
+
+            if (playerInvCache.get(playerSlot).isEmpty())
+                playerInvCache.set(playerSlot, stack);
+            else
+                playerInvCache.get(playerSlot).setCount(playerInvCache.get(playerSlot).getCount() + stack.getCount());
+
+        });
     }
 
     private void resetContentPointers() {
@@ -298,13 +558,13 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             for (int j = 0; j < this.getViewType().getSlotCount(); j++) {
 
                 //Exclude DependencySlots
-                if(!slotFillContext.contentDependencies.containsKey(j))
+                if (!slotFillContext.contentDependencies.containsKey(j))
                     this.viewContainer.setItem(j + (i * this.getViewType().getSlotCount()), slotFillContext.contentBySlot(j).next());
             }
             for (int j = 0; j < this.getViewType().getSlotCount(); j++) {
 
                 //Exclude DependencySlots
-                if(slotFillContext.contentDependencies.containsKey(j))
+                if (slotFillContext.contentDependencies.containsKey(j))
                     this.viewContainer.setItem(j + (i * this.getViewType().getSlotCount()), slotFillContext.contentBySlot(j).getByIndex(slotFillContext.contentDependencies.get(j).get()));
             }
         }
@@ -357,6 +617,8 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         private List<Slot> getItemSlots() {
             return this.itemSlots.values().stream().toList();
         }
+
+
     }
 
     public static class SlotFillContext {
@@ -376,7 +638,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             this.contents.put(slotId, slotContent);
         }
 
-        public void bindDepedantSlot(int slotId, Supplier<Integer> dependantIndex, SlotContent slotContent){
+        public void bindDepedantSlot(int slotId, Supplier<Integer> dependantIndex, SlotContent slotContent) {
             this.contents.put(slotId, slotContent);
             this.contentDependencies.put(slotId, dependantIndex);
         }
@@ -389,11 +651,11 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             this.additionalTooltips.put(slotId, tooltipProvider);
         }
 
-        private HashMap<Integer, SlotContent> getContents() {
+        protected HashMap<Integer, SlotContent> getContents() {
             return this.contents;
         }
 
-        protected SlotContent contentBySlot(int slotId){
+        protected SlotContent contentBySlot(int slotId) {
             return this.contents.getOrDefault(slotId, SlotContent.of(List.of()));
         }
 

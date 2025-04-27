@@ -63,6 +63,10 @@ public class SlotContent {
         return this.content.size();
     }
 
+    public boolean isEmpty() {
+        return this.content.stream().filter(ItemStack::isEmpty).count() == this.content.size();
+    }
+
     public int index() {
 
         if (this.hasItem(this.itemOrigin.getItem())) {
@@ -99,12 +103,12 @@ public class SlotContent {
     }
 
     private void setDataComponent() {
-        if (this.getItemTag().isEmpty())
+        if (this.itemTag().isEmpty())
             return;
 
         this.content.forEach(stack -> {
             CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            tag.putString(ExtendedItemView.MODID + "_recipeTag", this.getItemTag().get().location().toString());
+            tag.putString(ExtendedItemView.MODID + "_recipeTag", this.itemTag().get().location().toString());
             CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
         });
 
@@ -115,7 +119,7 @@ public class SlotContent {
     }
 
 
-    public Optional<TagKey<Item>> getItemTag() {
+    public Optional<TagKey<Item>> itemTag() {
         return this.itemTag == null ? Optional.empty() : Optional.of(this.itemTag);
     }
 

@@ -21,7 +21,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -50,6 +53,10 @@ public class ServerRecipeManager {
         this.broadcastAllRecipes();
     }
 
+    public MinecraftServer getServer() {
+        return this.server;
+    }
+
     public void reload(RecipeManager recipeManager) {
         ExtendedItemView.LOGGER.info("Reloading all Recipes...");
 
@@ -61,14 +68,14 @@ public class ServerRecipeManager {
 
     }
 
-    public void reloadAndSendModOnly(){
+    public void reloadAndSendModOnly() {
 
         this.reloadModRecipes();
         this.broadcastModRecipes();
     }
 
     public void reloadAndSendVanillaOnly() {
-        if(this.server == null) return;
+        if (this.server == null) return;
 
         this.reloadVanillaLikeRecipes(this.server.getRecipeManager());
         this.broadcastVanillaRecipes();
@@ -224,6 +231,31 @@ public class ServerRecipeManager {
             modRecipe.loadFromTag(tag.getCompound("recipeData"));
             return modRecipe;
         }
+    }
+
+
+    //Transfer
+    public void performRecipeTransfer(ServerPlayer player, HashMap<Integer, Integer> transferMap, HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots) {
+
+        if (!player.hasContainerOpen())
+            return;
+
+        transferMap.forEach((recipeSlot, destSlot) -> {
+
+            HashMap<Integer, ItemStack> usedSlots = usedPlayerSlots.getOrDefault(recipeSlot, new HashMap<>());
+
+            usedSlots.forEach((playerSlot, stack) -> {
+                ItemStack currentInDest = player.containerMenu.getSlot(destSlot).getItem();
+
+                if(currentInDest.isEmpty())
+                    player.containerMenu.getSlot(destSlot).set(player.getInventory().removeItem(playerSlot, stack.getCount()));
+                else
+                    player.containerMenu.getSlot(destSlot).set(currentInDest.copyWithCount(currentInDest.getCount() + player.getInventory().removeItem(playerSlot, stack.getCount()).getCount()));
+
+            });
+
+        });
+
     }
 
 }

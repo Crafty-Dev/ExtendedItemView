@@ -3,10 +3,13 @@ package de.crafty.eiv.recipe.inventory;
 import de.crafty.eiv.ExtendedItemView;
 import de.crafty.eiv.api.recipe.IEivRecipeViewType;
 import de.crafty.eiv.api.recipe.IEivViewRecipe;
+import de.crafty.eiv.network.payload.transfer.ServerboundTransferPayload;
 import de.crafty.eiv.overlay.ItemViewOverlay;
 import de.crafty.eiv.recipe.rendering.AnimationTicker;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -14,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.NonNullList;
@@ -25,8 +29,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.AbstractCraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 
@@ -81,14 +87,12 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
 
         this.prevType = Button.builder(Component.literal("<"), button -> {
                     this.getMenu().prevType();
-                    this.checkGui();
                 })
                 .size(14, 14)
                 .build();
 
         this.nextType = Button.builder(Component.literal(">"), button -> {
                     this.getMenu().nextType();
-                    this.checkGui();
                 })
                 .size(14, 14)
                 .build();
@@ -99,7 +103,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
         this.addRenderableWidget(this.nextType);
     }
 
-    private void checkGui() {
+    protected void checkGui() {
 
         this.prevType.active = this.getMenu().hasPrevType();
         this.nextType.active = this.getMenu().hasNextType();
@@ -128,32 +132,45 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
         int guiLeft = this.leftPos + this.getMenu().guiOffsetLeft();
 
         for (int i = 0; i < this.getMenu().getCurrentDisplay().size(); i++) {
-            final IEivViewRecipe curentView = this.getMenu().getCurrentDisplay().get(i);
+            final IEivViewRecipe currentView = this.getMenu().getCurrentDisplay().get(i);
 
             int guiTop = this.topPos + this.getMenu().guiOffsetTop(i);
 
+            int finalI = i;
             Button button = Button.builder(Component.literal("+"), button1 -> {
-                    if(!curentView.supportsItemTransfer())
-                        return;
+                        if (!currentView.supportsItemTransfer())
+                            return;
 
-                    Minecraft.getInstance().setScreen(this.getMenu().getParentScreen());
-                    LocalPlayer player = Minecraft.getInstance().player;
+                        Minecraft.getInstance().setScreen(this.getMenu().getParentScreen());
+                        LocalPlayer player = Minecraft.getInstance().player;
 
-                    if(Minecraft.getInstance().screen != null && player != null)
-                        curentView.mapRecipeItems(player.containerMenu, player.getInventory());
+                        if (Minecraft.getInstance().screen != null && player != null) {
+                            IEivViewRecipe.RecipeTransferMap map = new IEivViewRecipe.RecipeTransferMap();
+                            currentView.mapRecipeItems(map);
 
+
+                            if (currentView.getTransferClass() != null && currentView.getTransferClass().isInstance(Minecraft.getInstance().screen)) {
+
+                                RecipeTransferData transferData = this.getMenu().getTransferData().get(finalI);
+
+                                HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots = RecipeViewScreen.hasShiftDown() ? transferData.getStackedData().getUsedPlayerSlots() : transferData.getUsedPlayerSlots();
+                                //TODO sameItem - sameComponent
+                                //TODO check for correct inv
+                                ClientPlayNetworking.send(new ServerboundTransferPayload(map.getTransferMap(), usedPlayerSlots));
+
+                            }
+                        }
 
                     })
                     .size(12, 12)
-                    .pos(guiLeft + curentView.getViewType().getDisplayWidth() + 4, guiTop + curentView.getViewType().getDisplayHeight() / 2 - 6)
+                    .pos(guiLeft + currentView.getViewType().getDisplayWidth() + 4, guiTop + currentView.getViewType().getDisplayHeight() / 2 - 6)
                     .build();
 
-            NonNullList<Boolean> validIngredients = this.checkMatchingContent(i);
-            button.active = !validIngredients.contains(false);
+            RecipeTransferData data = this.getMenu().getTransferData().get(i);
+            button.active = data.isSuccess();
 
             this.addRenderableWidget(button);
             this.transferButtons.add(button);
-
 
         }
 
@@ -325,20 +342,20 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
 
         IEivViewRecipe current = this.getMenu().getCurrentDisplay().get(displayId);
 
-        NonNullList<Boolean> validIngredients = this.checkMatchingContent(displayId);
-        if (validIngredients.isEmpty())
+        RecipeTransferData data = this.getMenu().getTransferData().get(displayId);
+        if (data.isSuccess())
             return;
 
-        for (int slotId = 0; slotId < validIngredients.size(); slotId++) {
+        for (int slotId : data.getSlotResults().keySet()) {
 
-            if (validIngredients.get(slotId))
+            if (data.getSlotResults().get(slotId))
                 continue;
 
             int actualSlotId = slotId + (displayId * current.getViewType().getSlotCount());
-            Slot slot = this.getMenu().getSlot(actualSlotId);
+            Slot invSlot = this.getMenu().getSlot(actualSlotId);
 
-            int x = slot.x;
-            int y = slot.y;
+            int x = invSlot.x;
+            int y = invSlot.y;
 
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(-this.getMenu().guiOffsetLeft(), -this.getMenu().guiOffsetTop(displayId), 0);
@@ -346,80 +363,6 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
             guiGraphics.pose().popPose();
 
         }
-    }
-
-    private NonNullList<Boolean> checkMatchingContent(int displayId) {
-
-        IEivViewRecipe currentLooking = this.getMenu().getCurrentDisplay().get(displayId);
-
-        if (this.minecraft == null || this.minecraft.player == null)
-            return NonNullList.create();
-
-        LocalPlayer player = this.minecraft.player;
-        NonNullList<ItemStack> invContent = NonNullList.withSize(player.getInventory().items.size(), ItemStack.EMPTY);
-        for (int i = 0; i < invContent.size(); i++) {
-            invContent.set(i, player.getInventory().getItem(i).copy());
-        }
-
-
-        RecipeViewMenu.SlotFillContext slotFillContext = new RecipeViewMenu.SlotFillContext();
-        currentLooking.bindSlots(slotFillContext);
-        currentLooking.getIngredients().forEach(slotContent -> {
-            slotContent.setType(SlotContent.Type.INGREDIENT);
-        });
-        currentLooking.getResults().forEach(slotContent -> {
-            slotContent.setType(SlotContent.Type.RESULT);
-        });
-
-        NonNullList<Boolean> hasIngredients = NonNullList.withSize(currentLooking.getViewType().getSlotCount(), false);
-        for (int slotId = 0; slotId < hasIngredients.size(); slotId++) {
-            SlotContent content = slotFillContext.contentBySlot(slotId);
-
-            if (content.getType() == SlotContent.Type.RESULT || content.getValidContents().isEmpty()) {
-                hasIngredients.set(slotId, true);
-                continue;
-            }
-
-
-            for (ItemStack stack : content.getValidContents()) {
-                int matchingAmount = 0;
-
-                //TODO: Maybe add Component diff
-                for (ItemStack stack1 : invContent) {
-
-                    if (stack1.is(stack.getItem())) {
-                        matchingAmount += stack1.getCount();
-                    }
-
-                    if (matchingAmount >= stack.getCount())
-                        break;
-                }
-
-
-                if (matchingAmount >= stack.getCount()) {
-                    hasIngredients.set(slotId, true);
-
-                    int remove = stack.getCount();
-
-                    for (ItemStack invStack : invContent) {
-                        if (!invStack.is(stack.getItem()))
-                            continue;
-
-                        int count = invStack.getCount();
-                        invStack.setCount(Math.max(0, count - remove));
-                        remove -= count - invStack.getCount();
-
-                        if (remove <= 0)
-                            break;
-                    }
-
-                    break;
-                }
-            }
-
-        }
-
-        return hasIngredients;
     }
 }
 

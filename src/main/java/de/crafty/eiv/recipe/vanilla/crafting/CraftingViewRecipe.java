@@ -4,6 +4,8 @@ import de.crafty.eiv.api.recipe.IEivViewRecipe;
 import de.crafty.eiv.api.recipe.IEivRecipeViewType;
 import de.crafty.eiv.recipe.inventory.RecipeViewMenu;
 import de.crafty.eiv.recipe.inventory.SlotContent;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingMenu;
@@ -67,11 +69,22 @@ public class CraftingViewRecipe implements IEivViewRecipe {
     }
 
     @Override
-    public void mapRecipeItems(AbstractContainerMenu menu, Inventory inventory) {
+    public Class<? extends AbstractContainerScreen<?>> getTransferClass() {
+        return CraftingScreen.class;
+    }
 
-        if(!(menu instanceof CraftingMenu craftingMenu))
-            return;
+    @Override
+    public void mapRecipeItems(RecipeTransferMap map) {
 
+        map.linkSlots(0, 1);
+        map.linkSlots(1, 2);
+        map.linkSlots(2, 3);
+        map.linkSlots(3, 4);
+        map.linkSlots(4, 5);
+        map.linkSlots(5, 6);
+        map.linkSlots(6, 7);
+        map.linkSlots(7, 8);
+        map.linkSlots(8, 9);
 
     }
 }

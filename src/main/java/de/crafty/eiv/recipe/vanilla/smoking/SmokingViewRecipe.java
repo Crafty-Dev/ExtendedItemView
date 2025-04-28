@@ -8,6 +8,8 @@ import de.crafty.eiv.recipe.inventory.RecipeViewScreen;
 import de.crafty.eiv.recipe.inventory.SlotContent;
 import de.crafty.eiv.recipe.rendering.AnimationTicker;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.SmokerScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.SmokingRecipe;
@@ -62,5 +64,23 @@ public class SmokingViewRecipe implements IEivViewRecipe {
         guiGraphics.blit(RenderType::guiTextured, BuiltInEivIntegration.WIDGETS, 1, 20 + (14 - litProgress), 0, 14 - litProgress, 14, litProgress, 128, 128);
 
         guiGraphics.blit(RenderType::guiTextured, BuiltInEivIntegration.WIDGETS, 24, 19, 14, 0, smeltProgress, 16, 128, 128);
+    }
+
+
+    @Override
+    public boolean supportsItemTransfer() {
+        return true;
+    }
+
+    @Override
+    public Class<? extends AbstractContainerScreen<?>> getTransferClass() {
+        return SmokerScreen.class;
+    }
+
+    @Override
+    public void mapRecipeItems(RecipeTransferMap transferMap) {
+
+        transferMap.linkSlots(0, 0);
+
     }
 }

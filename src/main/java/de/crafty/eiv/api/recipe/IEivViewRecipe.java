@@ -73,7 +73,7 @@ public interface IEivViewRecipe {
     }
 
     default void mapRecipeItems(RecipeTransferMap transferMap) {
-    }
+    } 
 
 
     class RecipeTransferMap {

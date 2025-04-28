@@ -5,6 +5,8 @@ import de.crafty.eiv.api.recipe.IEivRecipeViewType;
 import de.crafty.eiv.recipe.inventory.RecipeViewMenu;
 import de.crafty.eiv.recipe.inventory.SlotContent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -67,9 +69,9 @@ public class SmithingViewRecipe implements IEivViewRecipe {
     @Override
     public void bindSlots(RecipeViewMenu.SlotFillContext slotFillContext) {
 
-        slotFillContext.bindSlot(0, SlotContent.of(this.base));
-        slotFillContext.bindSlot(1, this.additionIngredient);
-        slotFillContext.bindSlot(2, SlotContent.of(this.template));
+        slotFillContext.bindSlot(0, SlotContent.of(this.template));
+        slotFillContext.bindSlot(1, SlotContent.of(this.base));
+        slotFillContext.bindSlot(2, this.additionIngredient);
 
         slotFillContext.bindDepedantSlot(3, this.additionIngredient::index, this.result);
     }
@@ -87,5 +89,25 @@ public class SmithingViewRecipe implements IEivViewRecipe {
     @Override
     public int getPriority() {
         return this.isTrimType ? 1 : 0;
+    }
+
+
+    @Override
+    public boolean supportsItemTransfer() {
+        return true;
+    }
+
+    @Override
+    public Class<? extends AbstractContainerScreen<?>> getTransferClass() {
+        return SmithingScreen.class;
+    }
+
+    @Override
+    public void mapRecipeItems(RecipeTransferMap transferMap) {
+
+        transferMap.linkSlots(0, 0);
+        transferMap.linkSlots(1, 1);
+        transferMap.linkSlots(2, 2);
+
     }
 }

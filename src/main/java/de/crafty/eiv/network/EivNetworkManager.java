@@ -5,6 +5,7 @@ import de.crafty.eiv.network.payload.mod.ClientboundModRecipeUpdatePayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdateEndPayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdatePayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdateStartPayload;
+import de.crafty.eiv.network.payload.transfer.ClientboundUpdateTransferCachePayload;
 import de.crafty.eiv.network.payload.transfer.ServerboundTransferPayload;
 import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeTypeUpdateEndPayload;
 import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeTypeUpdatePayload;
@@ -38,6 +39,8 @@ public class EivNetworkManager {
 
         //Transfer
         PayloadTypeRegistry.playC2S().register(ServerboundTransferPayload.TYPE, ServerboundTransferPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(ClientboundUpdateTransferCachePayload.TYPE, ClientboundUpdateTransferCachePayload.STREAM_CODEC);
+
     }
 
 }

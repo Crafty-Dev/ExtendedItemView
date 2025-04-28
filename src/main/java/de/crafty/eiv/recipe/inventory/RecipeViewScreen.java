@@ -9,30 +9,22 @@ import de.crafty.eiv.recipe.rendering.AnimationTicker;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.AbstractCraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 
@@ -154,8 +146,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
                                 RecipeTransferData transferData = this.getMenu().getTransferData().get(finalI);
 
                                 HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots = RecipeViewScreen.hasShiftDown() ? transferData.getStackedData().getUsedPlayerSlots() : transferData.getUsedPlayerSlots();
-                                //TODO sameItem - sameComponent
-                                //TODO check for correct inv
+                                //TODO make component required in recipes
                                 ClientPlayNetworking.send(new ServerboundTransferPayload(map.getTransferMap(), usedPlayerSlots));
 
                             }
@@ -167,7 +158,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
                     .build();
 
             RecipeTransferData data = this.getMenu().getTransferData().get(i);
-            button.active = data.isSuccess();
+            button.active = data.isSuccess() && currentView.supportsItemTransfer() && currentView.getTransferClass().isInstance(this.getMenu().getParentScreen());
 
             this.addRenderableWidget(button);
             this.transferButtons.add(button);
@@ -363,6 +354,13 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
             guiGraphics.pose().popPose();
 
         }
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+
+        Minecraft.getInstance().setScreen(this.getMenu().getParentScreen());
     }
 }
 

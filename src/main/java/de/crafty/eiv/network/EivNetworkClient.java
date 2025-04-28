@@ -6,6 +6,7 @@ import de.crafty.eiv.network.payload.mod.ClientboundModRecipeUpdatePayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdateEndPayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdatePayload;
 import de.crafty.eiv.network.payload.mod.ClientboundModTypeUpdateStartPayload;
+import de.crafty.eiv.network.payload.transfer.ClientboundUpdateTransferCachePayload;
 import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeTypeUpdateEndPayload;
 import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeTypeUpdatePayload;
 import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeTypeUpdateStartPayload;
@@ -13,6 +14,8 @@ import de.crafty.eiv.network.payload.vanillalike.ClientboundVanillaLikeRecipeUpd
 import de.crafty.eiv.recipe.ClientRecipeManager;
 import de.crafty.eiv.recipe.cache.ModRecipeCache;
 import de.crafty.eiv.recipe.cache.VanillaRecipeCache;
+import de.crafty.eiv.recipe.inventory.RecipeViewMenu;
+import de.crafty.eiv.recipe.inventory.RecipeViewScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -32,6 +35,13 @@ public class EivNetworkClient {
 
         ClientPlayNetworking.registerGlobalReceiver(ClientboundAllUpdatesFinishedPayload.TYPE, (payload, context) -> {
            context.client().execute(ClientRecipeManager.INSTANCE::processRecipes);
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundUpdateTransferCachePayload.TYPE, (payload, context) -> {
+            context.client().execute(() -> {
+                if(context.client().screen instanceof RecipeViewScreen viewScreen)
+                    viewScreen.getMenu().updateTransferCache();
+            });
         });
 
     }

@@ -355,7 +355,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
                     ItemStack requiredStack = requiredStacks.get(recipeSlot);
 
-                    HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack);
+                    HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack, true);
                     if (found.isEmpty()) {
                         checking = false;
                         break;
@@ -401,7 +401,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
                 usedPlayerSlots.forEach((playerSlot, stack) -> {
 
-                    if(stackedMatch.get(recipeSlot).containsKey(playerSlot))
+                    if (stackedMatch.get(recipeSlot).containsKey(playerSlot))
                         stackedMatch.get(recipeSlot).put(playerSlot, stack.copyWithCount(stackedMatch.get(recipeSlot).get(playerSlot).getCount() + stack.getCount()));
                     else
                         stackedMatch.get(recipeSlot).put(playerSlot, stack);
@@ -429,7 +429,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
         for (ItemStack requiredStack : validStacks) {
 
-            HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack);
+            HashMap<Integer, ItemStack> found = this.invCheckAndFind(playerInvCache, requiredStack, false);
 
             if (!found.isEmpty()) {
                 usedPlayerSlots.put(slots.get(currentSlotIndex), found);
@@ -443,10 +443,12 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
     }
 
-    private HashMap<Integer, ItemStack> invCheckAndFind(NonNullList<ItemStack> playerInvCache, ItemStack requiredStack) {
+    private HashMap<Integer, ItemStack> invCheckAndFind(NonNullList<ItemStack> playerInvCache, ItemStack requiredStack, boolean checkComponents) {
 
         HashMap<Integer, ItemStack> usedPlayerSlots = new HashMap<>();
         int requiredAmount = requiredStack.getCount();
+
+        ItemStack firstFound = ItemStack.EMPTY;
 
         for (int playerSlot = 0; playerSlot < playerInvCache.size(); playerSlot++) {
 
@@ -456,7 +458,13 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             ItemStack playerStack = playerInvCache.get(playerSlot);
             ItemStack foundStack = playerStack.copy();
 
-            if (!playerStack.is(requiredStack.getItem()))
+            if (!(checkComponents ? ItemStack.isSameItemSameComponents(playerStack, requiredStack) : ItemStack.isSameItem(playerStack, requiredStack)))
+                continue;
+
+            if (firstFound.isEmpty())
+                firstFound = foundStack.copy();
+
+            if (!ItemStack.isSameItemSameComponents(foundStack, firstFound))
                 continue;
 
             int prevReq = requiredAmount;
@@ -599,6 +607,16 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         }
 
         return technicallyFitting;
+    }
+
+    public void updateTransferCache() {
+        System.out.println("Updating cache...");
+        this.transferData.clear();
+        for (int i = 0; i < this.getCurrentDisplay().size(); i++) {
+            this.transferData.add(this.checkMatchingContent(i));
+        }
+
+        this.viewScreen.checkGui();
     }
 
 

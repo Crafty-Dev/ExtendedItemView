@@ -16,7 +16,6 @@ import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class SmithingViewRecipe implements IEivViewRecipe {
 
@@ -63,7 +62,7 @@ public class SmithingViewRecipe implements IEivViewRecipe {
 
     @Override
     public IEivRecipeViewType getViewType() {
-        return SmithingRecipeViewType.INSTANCE;
+        return SmithingViewType.INSTANCE;
     }
 
     @Override

@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class BlastingViewType extends SmeltingViewType {
 
     public static final BlastingViewType INSTANCE = new BlastingViewType();
@@ -31,5 +33,10 @@ public class BlastingViewType extends SmeltingViewType {
     @Override
     public ResourceLocation getId() {
         return ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "furnace_blasting");
+    }
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.BLAST_FURNACE));
     }
 }

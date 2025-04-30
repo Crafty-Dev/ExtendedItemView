@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class StonecutterViewType implements IEivRecipeViewType {
 
     protected static final StonecutterViewType INSTANCE = new StonecutterViewType();
@@ -60,4 +62,9 @@ public class StonecutterViewType implements IEivRecipeViewType {
         slotDefinition.addItemSlot(1, 57, 1);
     }
 
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.STONECUTTER));
+    }
 }

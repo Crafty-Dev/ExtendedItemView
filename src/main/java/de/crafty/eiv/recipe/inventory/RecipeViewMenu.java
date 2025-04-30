@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -94,7 +95,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         ids.sort(String::compareTo);
 
         ids.forEach(id -> {
-           this.viewTypeOrder.add(byId.get(id));
+            this.viewTypeOrder.add(byId.get(id));
         });
 
         this.currentTypeIndex = 0;
@@ -257,7 +258,6 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
         }
 
-
         this.transferData.clear();
         for (int i = 0; i < this.getCurrentDisplay().size(); i++) {
             this.transferData.add(this.checkMatchingContent(i));
@@ -266,8 +266,14 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         if (this.viewScreen != null)
             this.viewScreen.checkGui();
 
-
         this.updateDependencies();
+
+        List<ItemStack> craftReferences = this.viewType.getCraftReferences();
+        for (int i = 0; i < Math.min(craftReferences.size(), 10); i++) {
+            this.addSlot(new Slot(this.viewContainer, this.viewType.getSlotCount() * this.getCurrentDisplay().size() + i, -25 + 4, 4 + 4 + i * 24 + i));
+            this.getSlot(this.viewType.getSlotCount() * this.getCurrentDisplay().size() + i).set(craftReferences.get(i));
+        }
+
     }
 
     public List<RecipeTransferData> getTransferData() {
@@ -281,6 +287,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             return RecipeTransferData.EMPTY;
 
         IEivViewRecipe currentLooking = this.getCurrentDisplay().get(displayId);
+
 
         RecipeViewMenu.SlotFillContext context = new RecipeViewMenu.SlotFillContext();
         currentLooking.bindSlots(context);
@@ -319,7 +326,6 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             validAndAvailableContent.put(slot, availableItems);
         }
 
-
         List<Integer> slots = new ArrayList<>();
         context.getContents().forEach((slot, slotContent) -> {
             if (slotContent.getType() != SlotContent.Type.RESULT)
@@ -333,7 +339,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
         RecipeTransferData transferData = dataBuilder.build();
 
-        if (transferData.isSuccess()) {
+        if (transferData.isSuccess() && !transferData.getUsedPlayerSlots().isEmpty()) {
 
             HashMap<Integer, ItemStack> requiredStacks = new HashMap<>();
             for (int recipeSlot : transferData.getUsedPlayerSlots().keySet()) {
@@ -544,9 +550,10 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
             this.maxPageIndex = i - 1;
 
-            this.viewContainer = new ViewContainer(this.viewType.getSlotCount() * this.maxPossiblePerPage);
+            this.viewContainer = new ViewContainer(this.viewType.getSlotCount() * this.maxPossiblePerPage + this.viewType.getCraftReferences().size());
 
             this.setMenuSizes();
+
             this.updateByPage();
 
         }

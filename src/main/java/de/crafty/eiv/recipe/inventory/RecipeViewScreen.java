@@ -138,7 +138,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
         this.nextRecipe.active = this.getMenu().hasNextRecipe();
 
         this.prevTypePage.visible = this.viewTypePage > 0;
-        this.nextTypePage.visible = this.viewTypePage < this.getMenu().getViewTypeOrder().size() / 5;
+        this.nextTypePage.visible = this.viewTypePage < (this.getMenu().getViewTypeOrder().size() - 1) / 5;
 
         this.imageHeight = this.getMenu().getHeight();
         this.imageWidth = this.getMenu().getWidth();
@@ -202,6 +202,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
 
             RecipeTransferData data = this.getMenu().getTransferData().get(i);
             button.active = data.isSuccess() && currentView.supportsItemTransfer() && currentView.getTransferClass().isInstance(this.getMenu().getParentScreen());
+            button.visible = currentView.supportsItemTransfer();
 
             this.addRenderableWidget(button);
             this.transferButtons.add(button);
@@ -377,6 +378,17 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
         }
 
 
+        //Render craft references
+
+        List<ItemStack> craftReferences = this.getMenu().getViewType().getCraftReferences();
+
+        for (int i = 0; i < craftReferences.size(); i++) {
+
+            guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.leftPos - 25, this.topPos + 4 + i * 24 + i, 231, 48, 25, 24, 256, 256);
+
+        }
+
+
         int guiLeft = this.leftPos + this.getMenu().guiOffsetLeft();
 
         for (int i = 0; i < this.getMenu().getCurrentDisplay().size(); i++) {
@@ -445,9 +457,18 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
             return true;
         }
 
+        private void onHover(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+            if (!(mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height))
+                return;
+
+            guiGraphics.renderTooltip(Minecraft.getInstance().font, this.viewType.getDisplayName(), mouseX, mouseY);
+        }
+
         private void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
             guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.x(), this.y(), 232, this.viewType() == this.viewScreen.getMenu().getViewType() ? 24 : 0, 24, 24, 256, 256);
             guiGraphics.renderFakeItem(this.viewType().getIcon(), this.x() + 4, this.y() + 4);
+
+            this.onHover(guiGraphics, mouseX, mouseY);
         }
 
     }

@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class CampfireViewType implements IEivRecipeViewType {
 
     protected static final CampfireViewType INSTANCE = new CampfireViewType();
@@ -61,4 +63,9 @@ public class CampfireViewType implements IEivRecipeViewType {
         slotDefinition.addItemSlot(1, 57, 1);
     }
 
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.CAMPFIRE));
+    }
 }

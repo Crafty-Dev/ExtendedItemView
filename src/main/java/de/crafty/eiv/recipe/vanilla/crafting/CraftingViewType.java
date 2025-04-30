@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class CraftingViewType implements IEivRecipeViewType {
 
     public static final CraftingViewType INSTANCE = new CraftingViewType();
@@ -68,4 +70,8 @@ public class CraftingViewType implements IEivRecipeViewType {
 
     }
 
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.CRAFTING_TABLE), new ItemStack(Items.CRAFTER));
+    }
 }

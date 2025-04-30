@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class SmokingViewType extends SmeltingViewType {
 
     public static final SmokingViewType INSTANCE = new SmokingViewType();
@@ -31,5 +33,10 @@ public class SmokingViewType extends SmeltingViewType {
     @Override
     public ResourceLocation getId() {
         return ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "furnace_smoking");
+    }
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.SMOKER));
     }
 }

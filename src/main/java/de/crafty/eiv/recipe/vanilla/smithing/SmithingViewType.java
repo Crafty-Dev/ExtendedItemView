@@ -3,16 +3,16 @@ package de.crafty.eiv.recipe.vanilla.smithing;
 import de.crafty.eiv.ExtendedItemView;
 import de.crafty.eiv.api.recipe.IEivRecipeViewType;
 import de.crafty.eiv.recipe.inventory.RecipeViewMenu;
-import de.crafty.eiv.recipe.inventory.RecipeViewScreen;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public class SmithingRecipeViewType implements IEivRecipeViewType {
+import java.util.List;
 
-    protected static final SmithingRecipeViewType INSTANCE = new SmithingRecipeViewType();
+public class SmithingViewType implements IEivRecipeViewType {
+
+    protected static final SmithingViewType INSTANCE = new SmithingViewType();
 
     private static final ResourceLocation SMITHING_LOCATION = ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "textures/gui/type/smithing.png");
 
@@ -65,5 +65,11 @@ public class SmithingRecipeViewType implements IEivRecipeViewType {
 
         //Result
         slotDefinition.addItemSlot(3, 91, 1);
+    }
+
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.SMITHING_TABLE));
     }
 }

@@ -50,7 +50,7 @@ public interface IEivViewRecipe {
 
     List<SlotContent> getResults();
 
-    default int   getPriority() {
+    default int getPriority() {
         return 0;
     }
 
@@ -73,7 +73,7 @@ public interface IEivViewRecipe {
     }
 
     default void mapRecipeItems(RecipeTransferMap transferMap) {
-    } 
+    }
 
 
     class RecipeTransferMap {

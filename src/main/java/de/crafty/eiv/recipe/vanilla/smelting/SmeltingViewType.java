@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public class SmeltingViewType implements IEivRecipeViewType {
 
     public static final SmeltingViewType INSTANCE = new SmeltingViewType();
@@ -64,4 +66,8 @@ public class SmeltingViewType implements IEivRecipeViewType {
         slotDefinition.addItemSlot(2, 61, 19);
     }
 
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(new ItemStack(Items.FURNACE));
+    }
 }

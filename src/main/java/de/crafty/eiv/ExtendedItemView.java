@@ -46,7 +46,7 @@ public class ExtendedItemView implements ModInitializer {
 
     }
 
-    public static void buildFluidItems(){
+    public static void buildFluidItems() {
         //Add FluidItems
         HashMap<Fluid, Item> fluidItemMap = new HashMap<>();
 

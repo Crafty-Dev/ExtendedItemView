@@ -8,6 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public interface IEivRecipeViewType {
 
     IEivRecipeViewType NONE = new IEivRecipeViewType() {
@@ -71,4 +73,7 @@ public interface IEivRecipeViewType {
 
     ItemStack getIcon();
 
+    default List<ItemStack> getCraftReferences() {
+        return List.of();
+    }
 }

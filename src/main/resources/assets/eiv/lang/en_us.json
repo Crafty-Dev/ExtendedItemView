@@ -12,6 +12,7 @@
   "view.eiv.type.smithing": "Smithing",
   "view.eiv.type.campfire": "Campfire Cooking",
   "eiv.fluid.unit": "mb",
-  "commands.eiv.reloaded": "Reload success"
+  "commands.eiv.reloaded": "Reload success",
+  "key.eiv.toggle_overlay": "Toggle Overlay"
 
 }

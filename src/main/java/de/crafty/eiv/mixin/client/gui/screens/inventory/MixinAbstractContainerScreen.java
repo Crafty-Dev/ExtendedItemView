@@ -54,6 +54,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         ItemViewOverlay.SEARCHBAR.setValue(ItemViewOverlay.INSTANCE.getCurrentQuery());
         ItemViewOverlay.SEARCHBAR.setResponder(ItemViewOverlay.INSTANCE::updateQuery);
 
+        ItemViewOverlay.SEARCHBAR.visible = ItemViewOverlay.INSTANCE.isEnabled();
         this.addRenderableWidget(ItemViewOverlay.SEARCHBAR);
     }
 
@@ -89,6 +90,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     private void injectOverlay$3(double mouseX, double mouseY, int mouseButton, CallbackInfoReturnable<Boolean> cir) {
         if (ItemViewOverlay.SEARCHBAR.isHovered() && mouseButton == 1) {
             ItemViewOverlay.SEARCHBAR.setValue("");
+            ItemViewOverlay.SEARCHBAR.setFocused(true);
             cir.setReturnValue(true);
         }
 

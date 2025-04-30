@@ -4,6 +4,8 @@ import de.crafty.eiv.ExtendedItemView;
 import de.crafty.eiv.recipe.vanilla.smelting.SmeltingViewType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class BlastingViewType extends SmeltingViewType {
 
@@ -21,4 +23,13 @@ public class BlastingViewType extends SmeltingViewType {
         return BLASTING_LOCATION;
     }
 
+    @Override
+    public ItemStack getIcon() {
+        return new ItemStack(Items.BLAST_FURNACE);
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "furnace_blasting");
+    }
 }

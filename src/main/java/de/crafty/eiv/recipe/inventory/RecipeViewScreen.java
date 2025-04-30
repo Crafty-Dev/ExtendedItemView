@@ -13,6 +13,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,7 +42,7 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
     //Timestamp when opening the view
     private final long timestamp;
 
-    private Button prevType, nextType;
+    private Button prevRecipe, nextRecipe;
     private Component guiTitle, page;
 
     private final List<AnimationTicker> animationTickers;
@@ -49,10 +50,17 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
 
     private final List<Button> transferButtons;
 
+    //View Type
+    private final List<ViewTypeButton> viewTypeButtons;
+    private int viewTypePage;
+    private Button prevTypePage, nextTypePage;
+
     public RecipeViewScreen(RecipeViewMenu recipeViewMenu, Inventory inventory, Component component) {
         super(recipeViewMenu, inventory, component);
 
         this.transferButtons = new ArrayList<>();
+        this.viewTypeButtons = new ArrayList<>();
+        this.viewTypePage = 0;
 
         this.animationTickers = new ArrayList<>();
         this.animationTickCache = new HashMap<>();
@@ -77,36 +85,71 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
     protected void init() {
         super.init();
 
-        this.prevType = Button.builder(Component.literal("<"), button -> {
-                    this.getMenu().prevType();
+        this.prevRecipe = Button.builder(Component.literal("<"), button -> {
+                    this.getMenu().prevPage();
                 })
-                .size(14, 14)
+                .size(12, 12)
                 .build();
 
-        this.nextType = Button.builder(Component.literal(">"), button -> {
-                    this.getMenu().nextType();
+        this.nextRecipe = Button.builder(Component.literal(">"), button -> {
+                    this.getMenu().nextRecipe();
                 })
-                .size(14, 14)
+                .size(12, 12)
+                .build();
+
+        this.prevTypePage = Button.builder(Component.literal("<"), button -> {
+                    this.viewTypePage = Math.max(this.viewTypePage - 1, 0);
+                    this.checkGui();
+                })
+                .size(12, 12)
+                .build();
+
+        this.nextTypePage = Button.builder(Component.literal(">"), button -> {
+                    this.viewTypePage = Math.min(this.viewTypePage + 1, this.getMenu().getViewTypeOrder().size() / 5);
+                    this.checkGui();
+                })
+                .size(12, 12)
                 .build();
 
         this.checkGui();
 
-        this.addRenderableWidget(this.prevType);
-        this.addRenderableWidget(this.nextType);
+        this.addRenderableWidget(this.prevRecipe);
+        this.addRenderableWidget(this.nextRecipe);
+        this.addRenderableWidget(this.prevTypePage);
+        this.addRenderableWidget(this.nextTypePage);
+
+        int width = 24;
+        int height = 24;
+
+        this.viewTypeButtons.clear();
+        for (int i = 0; i < this.getMenu().getViewTypeOrder().size(); i++) {
+            int tempId = i % 5;
+
+            int xPos = this.width / 2 - (5 * width / 2 + 4 * 2 / 2) + tempId * width + tempId * 2;
+            int yPos = this.topPos - height - 1;
+
+            this.viewTypeButtons.add(new ViewTypeButton(this, xPos, yPos, width, height, this.getMenu().getViewTypeOrder().get(i), i));
+        }
     }
 
     protected void checkGui() {
 
-        this.prevType.active = this.getMenu().hasPrevType();
-        this.nextType.active = this.getMenu().hasNextType();
+        this.prevRecipe.active = this.getMenu().hasPrevRecipe();
+        this.nextRecipe.active = this.getMenu().hasNextRecipe();
+
+        this.prevTypePage.visible = this.viewTypePage > 0;
+        this.nextTypePage.visible = this.viewTypePage < this.getMenu().getViewTypeOrder().size() / 5;
 
         this.imageHeight = this.getMenu().getHeight();
         this.imageWidth = this.getMenu().getWidth();
 
-        this.topPos = (this.height - RecipeViewMenu.MAX_POSSIBLE_HEIGHT) / 2;
+        this.topPos = 32;
 
-        this.prevType.setPosition(this.leftPos - 2 - 14, this.topPos);
-        this.nextType.setPosition(this.leftPos + this.imageWidth + 2, this.topPos);
+        this.prevRecipe.setPosition(this.leftPos + 8, this.topPos + 4);
+        this.nextRecipe.setPosition(this.leftPos + this.imageWidth - 8 - 12, this.topPos + 4);
+
+        this.prevTypePage.setPosition(this.width / 2 - (5 * 24 + 4 * 2) / 2 - 2 - 12, this.topPos - 1 - 12 - 6);
+        this.nextTypePage.setPosition(this.width / 2 + (5 * 24 + 4 * 2) / 2 + 2, this.topPos - 1 - 12 - 6);
 
         this.guiTitle = this.getMenu().getViewType().getDisplayName();
         this.titleLabelX = this.imageWidth / 2 - this.font.width(this.guiTitle) / 2;
@@ -261,6 +304,15 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
             return true;
         }
 
+        if (mouseButton == 0) {
+
+            for (int i = this.viewTypePage * 5; i < this.viewTypePage * 5 + 5 && this.viewTypeButtons.size() > i; i++) {
+                if (this.viewTypeButtons.get(i).onClick(mouseButton, (int) mouseX, (int) mouseY))
+                    return true;
+            }
+
+        }
+
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
@@ -304,10 +356,26 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
 
+
         guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight - 3, 256, 256);
         guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.leftPos, this.topPos + (this.imageHeight - 3), 0, 256 - 3, this.imageWidth, 3, 256, 256);
 
+
         IEivRecipeViewType viewType = this.getMenu().getViewType();
+
+        //Render icons
+
+        int current = this.getMenu().getCurrentTypeIndex();
+
+        for (int i = 0; i < 5; i++) {
+
+            guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.width / 2 - (5 * 24 + 4 * 2) / 2 + i * 24 + i * 2, this.topPos - 24 - 1, 208, 0, 24, 24, 256, 256);
+        }
+
+        for (int i = this.viewTypePage * 5; i < this.viewTypePage * 5 + 5 && this.viewTypeButtons.size() > i; i++) {
+            this.viewTypeButtons.get(i).render(guiGraphics, mouseX, mouseY, partialTicks);
+        }
+
 
         int guiLeft = this.leftPos + this.getMenu().guiOffsetLeft();
 
@@ -361,6 +429,27 @@ public class RecipeViewScreen extends AbstractContainerScreen<RecipeViewMenu> {
         super.onClose();
 
         Minecraft.getInstance().setScreen(this.getMenu().getParentScreen());
+    }
+
+
+    record ViewTypeButton(RecipeViewScreen viewScreen, int x, int y, int width, int height, IEivRecipeViewType viewType,
+                          int viewTypeId) {
+
+
+        private boolean onClick(int mouseButton, int mouseX, int mouseY) {
+            if (!(mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height))
+                return false;
+
+            this.viewScreen.getMenu().setViewType(this.viewTypeId);
+            AbstractWidget.playButtonClickSound(Minecraft.getInstance().getSoundManager());
+            return true;
+        }
+
+        private void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+            guiGraphics.blit(RenderType::guiTextured, VIEW_LOCATION, this.x(), this.y(), 232, this.viewType() == this.viewScreen.getMenu().getViewType() ? 24 : 0, 24, 24, 256, 256);
+            guiGraphics.renderFakeItem(this.viewType().getIcon(), this.x() + 4, this.y() + 4);
+        }
+
     }
 }
 

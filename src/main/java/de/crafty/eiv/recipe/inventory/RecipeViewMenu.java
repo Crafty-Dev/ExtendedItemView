@@ -82,9 +82,19 @@ public class RecipeViewMenu extends AbstractContainerMenu {
             this.sortedByType.put(viewType, list);
         });
 
+        //Sorting recipe types
         this.viewTypeOrder = new ArrayList<>();
-        this.sortedByType.forEach((viewType, iEivRecipes) -> {
-            this.viewTypeOrder.add(viewType);
+        List<IEivRecipeViewType> unsortedTypes = this.sortedByType.keySet().stream().toList();
+        HashMap<String, IEivRecipeViewType> byId = new HashMap<>();
+        unsortedTypes.forEach(viewType -> {
+            byId.put(viewType.getId().toString(), viewType);
+        });
+
+        List<String> ids = new ArrayList<>(byId.keySet());
+        ids.sort(String::compareTo);
+
+        ids.forEach(id -> {
+           this.viewTypeOrder.add(byId.get(id));
         });
 
         this.currentTypeIndex = 0;
@@ -161,30 +171,37 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         this.updateByPage();
     }
 
-    public void nextType() {
+    public void nextRecipe() {
+        int prevPage = this.currentPage;
+        this.currentPage = Math.min(this.currentPage + 1, this.maxPageIndex);
+
+        if (prevPage != this.currentPage)
+            this.updateByPage();
+
+    }
+
+    public void setViewType(int typeId) {
         int prevIndex = this.currentTypeIndex;
-        this.currentTypeIndex = Math.min(this.currentTypeIndex + 1, this.viewTypeOrder.size() - 1);
+        this.currentTypeIndex = typeId;
 
         if (prevIndex != this.currentTypeIndex)
             this.updateByViewType();
-
     }
 
-    public void prevType() {
-        int prevIndex = this.currentTypeIndex;
-        this.currentTypeIndex = Math.max(this.currentTypeIndex - 1, 0);
-
-        if (prevIndex != this.currentTypeIndex)
-            this.updateByViewType();
-
+    public boolean hasNextRecipe() {
+        return this.currentPage < this.maxPageIndex;
     }
 
-    public boolean hasNextType() {
-        return this.currentTypeIndex < this.viewTypeOrder.size() - 1;
+    public boolean hasPrevRecipe() {
+        return this.currentPage > 0;
     }
 
-    public boolean hasPrevType() {
-        return this.currentTypeIndex > 0;
+    public List<IEivRecipeViewType> getViewTypeOrder() {
+        return this.viewTypeOrder;
+    }
+
+    public int getCurrentTypeIndex() {
+        return this.currentTypeIndex;
     }
 
     protected List<IEivViewRecipe> getCurrentDisplay() {
@@ -248,6 +265,9 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
         if (this.viewScreen != null)
             this.viewScreen.checkGui();
+
+
+        this.updateDependencies();
     }
 
     public List<RecipeTransferData> getTransferData() {
@@ -569,9 +589,21 @@ public class RecipeViewMenu extends AbstractContainerMenu {
                 if (!slotFillContext.contentDependencies.containsKey(j))
                     this.viewContainer.setItem(j + (i * this.getViewType().getSlotCount()), slotFillContext.contentBySlot(j).next());
             }
+
+        }
+
+        this.updateDependencies();
+    }
+
+    protected void updateDependencies() {
+        for (int i = 0; i < this.currentDisplay.size(); i++) {
+            IEivViewRecipe recipe = this.currentDisplay.get(i);
+
+            SlotFillContext slotFillContext = new SlotFillContext();
+            recipe.bindSlots(slotFillContext);
+
             for (int j = 0; j < this.getViewType().getSlotCount(); j++) {
 
-                //Exclude DependencySlots
                 if (slotFillContext.contentDependencies.containsKey(j))
                     this.viewContainer.setItem(j + (i * this.getViewType().getSlotCount()), slotFillContext.contentBySlot(j).getByIndex(slotFillContext.contentDependencies.get(j).get()));
             }

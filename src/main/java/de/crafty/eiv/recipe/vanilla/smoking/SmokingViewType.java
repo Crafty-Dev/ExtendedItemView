@@ -4,6 +4,8 @@ import de.crafty.eiv.ExtendedItemView;
 import de.crafty.eiv.recipe.vanilla.smelting.SmeltingViewType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class SmokingViewType extends SmeltingViewType {
 
@@ -19,5 +21,15 @@ public class SmokingViewType extends SmeltingViewType {
     @Override
     public ResourceLocation getGuiTexture() {
         return BLASTING_LOCATION;
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return new ItemStack(Items.SMOKER);
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "furnace_smoking");
     }
 }

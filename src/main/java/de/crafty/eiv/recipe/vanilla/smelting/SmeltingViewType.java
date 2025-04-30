@@ -7,6 +7,8 @@ import de.crafty.eiv.recipe.inventory.RecipeViewScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class SmeltingViewType implements IEivRecipeViewType {
 
@@ -21,7 +23,12 @@ public class SmeltingViewType implements IEivRecipeViewType {
 
     @Override
     public ResourceLocation getId() {
-        return ResourceLocation.withDefaultNamespace("blasting");
+        return ResourceLocation.withDefaultNamespace("furnace_smelting");
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return new ItemStack(Items.FURNACE);
     }
 
     @Override

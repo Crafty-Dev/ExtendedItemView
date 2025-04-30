@@ -7,6 +7,8 @@ import de.crafty.eiv.recipe.inventory.RecipeViewScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class StonecutterViewType implements IEivRecipeViewType {
 
@@ -22,6 +24,11 @@ public class StonecutterViewType implements IEivRecipeViewType {
     @Override
     public ResourceLocation getId() {
         return ResourceLocation.withDefaultNamespace("stonecutting");
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return new ItemStack(Items.STONECUTTER);
     }
 
     @Override

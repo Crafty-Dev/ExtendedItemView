@@ -38,6 +38,10 @@ public class ExtendedItemViewClient implements ClientModInitializer {
             new KeyMapping("key.eiv.recipe", 82, "key.categories.eiv")
     );
 
+    public static final KeyMapping TOGGLE_OVERLAY = KeyBindingHelper.registerKeyBinding(
+            new KeyMapping("key.eiv.toggle_overlay", 79, "key.categories.eiv")
+    );
+
     public static final MenuType<RecipeViewMenu> RECIPE_VIEW_MENU = Registry.register(BuiltInRegistries.MENU, ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "recipe_view"), new MenuType<>(RecipeViewMenu::new, FeatureFlagSet.of()));
 
     public static final ModelLayerLocation FLUID_ITEM_MODEL_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ExtendedItemView.MODID, "fluiditem"), "inventory");

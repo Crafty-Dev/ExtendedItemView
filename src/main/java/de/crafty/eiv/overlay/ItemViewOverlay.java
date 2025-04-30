@@ -39,11 +39,29 @@ public class ItemViewOverlay {
 
     private int startIndex;
 
+    private boolean enabled;
+
     public ItemViewOverlay() {
         this.currentQuery = "";
         this.availableItems = new ArrayList<>();
         this.startIndex = 0;
+        this.enabled = true;
 
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        boolean prev = this.enabled;
+        this.enabled = enabled;
+
+        if(prev != enabled && enabled)
+            ItemViewOverlay.SEARCHBAR.visible = true;
+
+        if(prev != enabled && !enabled)
+            ItemViewOverlay.SEARCHBAR.visible = false;
     }
 
     public int getFittingItemsPerColumn() {
@@ -134,6 +152,10 @@ public class ItemViewOverlay {
     }
 
     public void scrollMouse(double mouseX, double mouseY, double scrolledX, double scrolledY) {
+
+        if(!this.isEnabled())
+            return;
+
         if (mouseX < this.itemStartX)
             return;
 
@@ -150,6 +172,9 @@ public class ItemViewOverlay {
     }
 
     public void clickMouse(int mouseX, int mouseY, int mouseButton) {
+        if(!this.isEnabled())
+            return;
+
         if (mouseX < this.xStart)
             return;
 
@@ -162,6 +187,13 @@ public class ItemViewOverlay {
     }
 
     public void keyPressed(int i, int j, int k) {
+
+        if(!ItemViewOverlay.SEARCHBAR.isFocused() && ExtendedItemViewClient.TOGGLE_OVERLAY.matches(i, j))
+            ItemViewOverlay.INSTANCE.setEnabled(!ItemViewOverlay.INSTANCE.isEnabled());
+
+        if(!this.isEnabled())
+            return;
+
         for (ItemSlot slot : this.slots) {
             if (!slot.isHovered())
                 continue;
@@ -174,6 +206,7 @@ public class ItemViewOverlay {
 
             break;
         }
+
     }
 
 
@@ -189,6 +222,9 @@ public class ItemViewOverlay {
 
 
     public void render(AbstractContainerScreen<? extends AbstractContainerMenu> screen, InventoryPositionInfo positionInfo, Minecraft client, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+
+        if(!this.isEnabled())
+            return;
 
         Font font = client.font;
 

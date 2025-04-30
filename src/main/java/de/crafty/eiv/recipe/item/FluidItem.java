@@ -37,55 +37,6 @@ public class FluidItem extends BlockItem {
     }
 
 
-    @Override
-    public @NotNull InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
-
-        if (!level.isClientSide() && player.getItemInHand(interactionHand).getItem() instanceof FluidItem fluidItem && fluidItem.getFluid() == Fluids.LAVA) {
-            System.out.println("Moin");
-
-            SlotContent content = SlotContent.of(Items.DIRT);
-            SlotContent content1 = SlotContent.of(new ItemStack(Items.COBBLESTONE, 20));
-            SlotContent content2 = SlotContent.of(new ItemStack(Items.STONE, 2));
-            SlotContent content3 = SlotContent.of(ItemTags.BANNERS);
-
-            List<SlotContent> recipeContent = List.of(
-                    content,
-                    content1,
-                    content2,
-                    content3
-            );
-
-            HashMap<Integer, ItemStack> playerTransfer = new HashMap<>();
-
-            NonNullList<ItemStack> playerInv = NonNullList.withSize(player.getInventory().items.size(), ItemStack.EMPTY);
-            player.getInventory().items.forEach(stack -> playerInv.add(stack.copy()));
-
-            for (int slot = 0; slot < recipeContent.size(); slot++) {
-
-                if (recipeContent.get(slot).getType() == SlotContent.Type.RESULT)
-                    continue;
-
-                SlotContent slotContent = recipeContent.get(slot);
-
-                for (ItemStack stack : slotContent.getValidContents()) {
-                    for(int playerSlot = 0; playerSlot < playerInv.size(); playerSlot++) {
-                        if(ItemStack.isSameItemSameComponents(playerInv.get(playerSlot), stack)) {
-                            int queriedAmount = Math.min(stack.getCount(), playerInv.get(playerSlot).getCount());
-                            playerInv.get(playerSlot).shrink(queriedAmount);
-
-                            ItemStack transfer = playerInv.get(playerSlot).copy();
-                            transfer.setCount(queriedAmount);
-                            playerTransfer.put(playerSlot, transfer);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        return super.use(level, player, interactionHand);
-    }
-
     public Fluid getFluid() {
         return this.fluid;
     }

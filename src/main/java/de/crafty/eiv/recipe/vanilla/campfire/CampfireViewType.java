@@ -27,6 +27,11 @@ public class CampfireViewType implements IEivRecipeViewType {
     }
 
     @Override
+    public ItemStack getIcon() {
+        return new ItemStack(Items.CAMPFIRE);
+    }
+
+    @Override
     public int getDisplayWidth() {
         return 74;
     }

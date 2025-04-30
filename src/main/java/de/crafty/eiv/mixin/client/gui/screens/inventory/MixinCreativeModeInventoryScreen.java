@@ -20,8 +20,14 @@ public abstract class MixinCreativeModeInventoryScreen extends AbstractContainer
     }
 
     @Inject(method = "charTyped", at = @At("HEAD"), cancellable = true)
-    private void injectSearchBar(char c, int i, CallbackInfoReturnable<Boolean> cir){
+    private void injectSearchBar$0(char c, int i, CallbackInfoReturnable<Boolean> cir){
         if(ItemViewOverlay.SEARCHBAR.isFocused())
-            cir.setReturnValue(super.charTyped(c, i));
+            cir.setReturnValue(ItemViewOverlay.SEARCHBAR.charTyped(c, i));
+    }
+
+    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void injectSearchBar$1(int i, int j, int k, CallbackInfoReturnable<Boolean> cir){
+        if(ItemViewOverlay.SEARCHBAR.isFocused())
+            cir.setReturnValue(ItemViewOverlay.SEARCHBAR.keyPressed(i, j, k) || super.keyPressed(i, j, k));
     }
 }

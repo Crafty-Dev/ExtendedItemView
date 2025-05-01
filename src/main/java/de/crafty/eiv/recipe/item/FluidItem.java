@@ -51,13 +51,6 @@ public class FluidItem extends BlockItem {
 
     }
 
-    @Override
-    public InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
-
-        if(level.isClientSide())
-            KeyMapping.resetMapping();
-        return super.use(level, player, interactionHand);
-    }
 
     public static class FluidItemProperties extends Properties {
 

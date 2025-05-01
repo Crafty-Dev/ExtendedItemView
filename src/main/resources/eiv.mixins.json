@@ -12,6 +12,7 @@
   },
   "client": [
     "client.MixinKeyMapping",
+    "client.MixinMinecraft",
     "client.gui.MixinGui",
     "client.gui.screens.MixinScreen",
     "client.gui.screens.inventory.MixinAbstractContainerScreen",

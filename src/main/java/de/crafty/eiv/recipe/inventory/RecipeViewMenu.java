@@ -649,7 +649,6 @@ public class RecipeViewMenu extends AbstractContainerMenu {
     }
 
     public void updateTransferCache() {
-        System.out.println("Updating cache...");
         this.transferData.clear();
         for (int i = 0; i < this.getCurrentDisplay().size(); i++) {
             this.transferData.add(this.checkMatchingContent(i));

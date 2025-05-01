@@ -1,5 +1,11 @@
 package de.crafty.eiv.overlay;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import de.crafty.eiv.ExtendedItemViewClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -48,12 +54,35 @@ public class ItemBookmarkOverlay {
         return this.bookmarkedItems;
     }
 
+    public void saveBookmarkedItems(JsonObject json) {
+
+        JsonArray array = new JsonArray();
+        this.bookmarkedItems.forEach(stack -> {
+            array.add(ItemStack.CODEC.encode(stack, JsonOps.INSTANCE, new JsonObject()).getOrThrow().getAsJsonObject());
+        });
+
+        json.add("bookmarkedItems", array);
+    }
+
+    public void loadBookmarkedItems(JsonObject json) {
+        this.bookmarkedItems.clear();
+
+        if(!json.has("bookmarkedItems"))
+            return;
+
+        json.getAsJsonArray("bookmarkedItems").forEach(jsonE -> {
+            JsonObject jsonItem = jsonE.getAsJsonObject();
+
+            DataResult<Pair<ItemStack, JsonElement>> result = ItemStack.CODEC.decode(JsonOps.INSTANCE, jsonItem);
+            if(result.isSuccess())
+                this.bookmarkedItems.add(result.getOrThrow().getFirst());
+        });
+
+        this.updateSlots();
+    }
+
     public void initForScreen(AbstractContainerScreen<? extends AbstractContainerMenu> screen) {
         ItemViewOverlay.InventoryPositionInfo currentInfo = ItemViewOverlay.INSTANCE.getCurrentInventoryInfo();
-
-        if (screen instanceof AbstractRecipeBookScreen<?> recipeBookScreen) {
-            System.out.println(recipeBookScreen.recipeBookComponent.isVisible());
-        }
 
         //-16 for Cleaner Appereance
         int spaceForOverlayX = (screen instanceof AbstractRecipeBookScreen<?> recipeBookScreen && recipeBookScreen.recipeBookComponent.isVisible()) ? recipeBookScreen.recipeBookComponent.getXOrigin() - 32 : currentInfo.leftPos();
@@ -97,7 +126,7 @@ public class ItemBookmarkOverlay {
             int xOff = (j - (j / this.fittingItemsPerRow) * this.fittingItemsPerRow) * 20;
             int yOff = j / this.fittingItemsPerRow * 20;
 
-            this.slots.add(new ItemSlot(stack, this.itemStartX + xOff + 2, this.itemStartY + yOff + 2));
+            this.slots.add(new ItemSlot(stack, this.itemStartX + xOff, this.itemStartY + yOff));
         }
 
     }
@@ -165,7 +194,6 @@ public class ItemBookmarkOverlay {
     }
 
     public void render(AbstractContainerScreen<? extends AbstractContainerMenu> screen, ItemViewOverlay.InventoryPositionInfo positionInfo, Minecraft client, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-
         if (this.slots.isEmpty())
             return;
 

@@ -103,7 +103,6 @@ public class ItemViewOverlay {
 
     public boolean checkForScreenChange(AbstractContainerScreen<? extends AbstractContainerMenu> screen, InventoryPositionInfo newInfo) {
         if (!newInfo.matches(this.currentInfo)) {
-            System.out.println("Check");
             this.currentInfo = newInfo;
             this.initForScreen(screen);
             ItemBookmarkOverlay.INSTANCE.initForScreen(screen);
@@ -133,7 +132,7 @@ public class ItemViewOverlay {
 
         this.xStart = screen.width - this.width;
 
-        this.itemStartX = this.xStart - 2;
+        this.itemStartX = this.xStart;
         this.itemStartY = headlineSpace;
 
         this.updateQuery(this.getCurrentQuery());
@@ -154,7 +153,7 @@ public class ItemViewOverlay {
             int xOff = (j - (j / this.fittingItemsPerRow) * this.fittingItemsPerRow) * 20;
             int yOff = j / this.fittingItemsPerRow * 20;
 
-            this.slots.add(new ItemSlot(new ItemStack(item), this.itemStartX + xOff + 2, this.itemStartY + yOff + 2));
+            this.slots.add(new ItemSlot(new ItemStack(item), this.itemStartX + xOff, this.itemStartY + yOff));
         }
 
     }

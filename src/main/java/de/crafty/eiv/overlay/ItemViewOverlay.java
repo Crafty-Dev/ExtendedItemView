@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -40,12 +41,15 @@ public class ItemViewOverlay {
     private int startIndex;
 
     private boolean enabled;
+    private InventoryPositionInfo currentInfo;
 
-    public ItemViewOverlay() {
+    private ItemViewOverlay() {
         this.currentQuery = "";
         this.availableItems = new ArrayList<>();
         this.startIndex = 0;
         this.enabled = true;
+
+        this.currentInfo = null;
 
     }
 
@@ -57,11 +61,15 @@ public class ItemViewOverlay {
         boolean prev = this.enabled;
         this.enabled = enabled;
 
-        if(prev != enabled && enabled)
+        if (prev != enabled && enabled)
             ItemViewOverlay.SEARCHBAR.visible = true;
 
-        if(prev != enabled && !enabled)
+        if (prev != enabled && !enabled)
             ItemViewOverlay.SEARCHBAR.visible = false;
+    }
+
+    public InventoryPositionInfo getCurrentInventoryInfo() {
+        return this.currentInfo;
     }
 
     public int getFittingItemsPerColumn() {
@@ -92,9 +100,23 @@ public class ItemViewOverlay {
         return this.availableItems;
     }
 
-    public void initForScreen(AbstractContainerScreen<? extends AbstractContainerMenu> screen, InventoryPositionInfo positionInfo) {
+
+    public boolean checkForScreenChange(AbstractContainerScreen<? extends AbstractContainerMenu> screen, InventoryPositionInfo newInfo) {
+        if (!newInfo.matches(this.currentInfo)) {
+            System.out.println("Check");
+            this.currentInfo = newInfo;
+            this.initForScreen(screen);
+            ItemBookmarkOverlay.INSTANCE.initForScreen(screen);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void initForScreen(AbstractContainerScreen<? extends AbstractContainerMenu> screen) {
         //-16 for Cleaner Appereance
-        int spaceForOverlayX = screen.width - (positionInfo.leftPos + positionInfo.width) - 14;
+        int spaceForOverlayX = screen.width - (this.currentInfo.leftPos + this.currentInfo.imageWidth);
+        spaceForOverlayX -= spaceForOverlayX > 2 * 20 + 14 ? 14 : 0;
 
         this.fittingItemsPerRow = Math.min(8, spaceForOverlayX / 20);
         spaceForOverlayX = this.fittingItemsPerRow * 20;
@@ -153,8 +175,10 @@ public class ItemViewOverlay {
 
     public void scrollMouse(double mouseX, double mouseY, double scrolledX, double scrolledY) {
 
-        if(!this.isEnabled())
+        if (!this.isEnabled())
             return;
+
+        ItemBookmarkOverlay.INSTANCE.scrollMouse(mouseX, mouseY, scrolledX, scrolledY);
 
         if (mouseX < this.itemStartX)
             return;
@@ -172,8 +196,10 @@ public class ItemViewOverlay {
     }
 
     public void clickMouse(int mouseX, int mouseY, int mouseButton) {
-        if(!this.isEnabled())
+        if (!this.isEnabled())
             return;
+
+        ItemBookmarkOverlay.INSTANCE.clickMouse(mouseX, mouseY, mouseButton);
 
         if (mouseX < this.xStart)
             return;
@@ -188,11 +214,13 @@ public class ItemViewOverlay {
 
     public void keyPressed(int i, int j, int k) {
 
-        if(!ItemViewOverlay.SEARCHBAR.isFocused() && ExtendedItemViewClient.TOGGLE_OVERLAY.matches(i, j))
+        if (!ItemViewOverlay.SEARCHBAR.isFocused() && ExtendedItemViewClient.TOGGLE_OVERLAY_KEYBIND.matches(i, j))
             ItemViewOverlay.INSTANCE.setEnabled(!ItemViewOverlay.INSTANCE.isEnabled());
 
-        if(!this.isEnabled())
+        if (!this.isEnabled())
             return;
+
+        ItemBookmarkOverlay.INSTANCE.keyPressed(i, j, k);
 
         for (ItemSlot slot : this.slots) {
             if (!slot.isHovered())
@@ -203,6 +231,9 @@ public class ItemViewOverlay {
 
             if (ExtendedItemViewClient.RECIPE_KEYBIND.matches(i, j))
                 ItemViewOverlay.INSTANCE.openRecipeView(slot.getStack(), ItemViewOverlay.ItemViewOpenType.RESULT);
+
+            if(ExtendedItemViewClient.ADD_BOOKMARK_KEYBIND.matches(i, j))
+                ItemBookmarkOverlay.INSTANCE.bookmarkItem(slot.getStack());
 
             break;
         }
@@ -223,8 +254,11 @@ public class ItemViewOverlay {
 
     public void render(AbstractContainerScreen<? extends AbstractContainerMenu> screen, InventoryPositionInfo positionInfo, Minecraft client, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 
-        if(!this.isEnabled())
+        if (!this.isEnabled())
             return;
+
+        ItemBookmarkOverlay.INSTANCE.render(screen, positionInfo, client, guiGraphics, mouseX, mouseY, partialTicks);
+
 
         Font font = client.font;
 
@@ -235,6 +269,7 @@ public class ItemViewOverlay {
         for (ItemSlot slot : this.slots) {
             slot.render(guiGraphics, mouseX, mouseY, partialTicks);
         }
+
     }
 
 
@@ -248,9 +283,9 @@ public class ItemViewOverlay {
 
         List<IEivViewRecipe> foundRecipes = openType.recipeProvider().retrieveRecipes(stack);
 
-        if (!foundRecipes.isEmpty()){
+        if (!foundRecipes.isEmpty()) {
             Screen parent = Minecraft.getInstance().screen;
-            if(parent instanceof RecipeViewScreen viewScreen)
+            if (parent instanceof RecipeViewScreen viewScreen)
                 parent = viewScreen.getMenu().getParentScreen();
 
             Minecraft.getInstance().setScreen(new RecipeViewScreen(new RecipeViewMenu(parent, 0, clientPlayer.getInventory(), foundRecipes, stack), clientPlayer.getInventory(), Component.empty()));
@@ -279,6 +314,21 @@ public class ItemViewOverlay {
         }
     }
 
-    public record InventoryPositionInfo(int leftPos, int topPos, int width, int height) {
+    public record InventoryPositionInfo(int screenWidth, int screenHeight, int leftPos, int topPos, int imageWidth,
+                                        int imageHeight) {
+
+
+        private boolean matches(@Nullable InventoryPositionInfo info) {
+            if (info == null)
+                return false;
+
+            return info.screenWidth == this.screenWidth
+                    && info.screenHeight == this.screenHeight
+                    && info.leftPos == this.leftPos
+                    && info.topPos == this.topPos
+                    && info.imageWidth == this.imageWidth
+                    && info.imageHeight == this.imageHeight;
+        }
+
     }
 }

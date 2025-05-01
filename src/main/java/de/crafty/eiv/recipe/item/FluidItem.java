@@ -4,6 +4,7 @@ import de.crafty.eiv.ExtendedItemView;
 import de.crafty.eiv.extra.FluidStack;
 import de.crafty.eiv.recipe.inventory.SlotContent;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -48,6 +49,14 @@ public class FluidItem extends BlockItem {
         FluidStack fluidStack = FluidStack.fromItemStack(itemStack);
         list.add(Component.literal(String.valueOf(fluidStack.getAmount())).append(Component.translatable("eiv.fluid.unit")).withStyle(ChatFormatting.GRAY));
 
+    }
+
+    @Override
+    public InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
+
+        if(level.isClientSide())
+            KeyMapping.resetMapping();
+        return super.use(level, player, interactionHand);
     }
 
     public static class FluidItemProperties extends Properties {

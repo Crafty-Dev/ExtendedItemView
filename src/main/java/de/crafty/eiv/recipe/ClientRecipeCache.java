@@ -37,8 +37,6 @@ public class ClientRecipeCache {
 
     }
 
-    public void clear() {
-    }
 
     public void updateVanillaLikeType(RecipeType<?> type, List<ServerRecipeManager.VanillaRecipeEntry> recipes) {
         this.vanillaLikeMap.getOrDefault(type, new ArrayList<>()).forEach(entry -> {
@@ -124,6 +122,15 @@ public class ClientRecipeCache {
                         this.byItemIngredient.put(stack.getItem(), byIngredient);
                     });
                 });
+                wrapped.getViewType().getCraftReferences().forEach(reference -> {
+                    List<ResourceLocation> byIngredient = this.byItemIngredient.getOrDefault(reference.getItem(), new ArrayList<>());
+                    byIngredient.remove(uniqueId);
+                    byIngredient.add(uniqueId);
+                    this.byItemIngredient.put(reference.getItem(), byIngredient);
+                });
+
+
+
                 wrapped.getResults().forEach(result -> {
                     result.getValidContents().forEach(stack -> {
                         List<ResourceLocation> byResult = this.byItemResult.getOrDefault(stack.getItem(), new ArrayList<>());
@@ -168,6 +175,14 @@ public class ClientRecipeCache {
                         this.byItemIngredient.put(stack.getItem(), byIngredient);
                     });
                 });
+
+                wrapped.getViewType().getCraftReferences().forEach(reference -> {
+                    List<ResourceLocation> byIngredient = this.byItemIngredient.getOrDefault(reference.getItem(), new ArrayList<>());
+                    byIngredient.remove(uniqueId);
+                    byIngredient.add(uniqueId);
+                    this.byItemIngredient.put(reference.getItem(), byIngredient);
+                });
+
                 wrapped.getResults().forEach(result -> {
                     result.getValidContents().forEach(stack -> {
                         List<ResourceLocation> byResult = this.byItemResult.getOrDefault(stack.getItem(), new ArrayList<>());
@@ -184,6 +199,7 @@ public class ClientRecipeCache {
     private ResourceLocation getUniqueId(ServerRecipeManager.VanillaRecipeEntry vanillaLike, int index) {
         return ResourceLocation.fromNamespaceAndPath(vanillaLike.id().getNamespace(), vanillaLike.id().getPath() + "/" + index);
     }
+
     private ResourceLocation getUniqueId(ServerRecipeManager.ModRecipeEntry modEntry, int index) {
         return ResourceLocation.fromNamespaceAndPath(modEntry.modRecipeId().getNamespace(), modEntry.modRecipeId().getPath() + "/" + index);
     }

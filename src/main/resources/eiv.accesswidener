@@ -8,3 +8,9 @@ accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStack;
 
 accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
+
+accessible field net/minecraft/client/gui/screens/inventory/AbstractRecipeBookScreen recipeBookComponent Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;
+accessible method net/minecraft/client/gui/screens/recipebook/RecipeBookComponent getXOrigin ()I
+accessible field net/minecraft/client/KeyMapping key Lcom/mojang/blaze3d/platform/InputConstants$Key;
+accessible field net/minecraft/client/KeyMapping ALL Ljava/util/Map;
+accessible field net/minecraft/client/KeyMapping MAP Ljava/util/Map;

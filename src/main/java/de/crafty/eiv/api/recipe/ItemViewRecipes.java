@@ -23,7 +23,6 @@ public class ItemViewRecipes {
 
     private final List<ServerModRecipeProvider> modRecipeProviders;
 
-    private final HashMap<ResourceLocation, IEivViewRecipe> modRecipeIdMap;
     private final HashMap<Fluid, Item> fluidItemMap;
 
 
@@ -33,8 +32,6 @@ public class ItemViewRecipes {
 
         this.modRecipeProviders = new ArrayList<>();
 
-
-        this.modRecipeIdMap = new HashMap<>();
         this.fluidItemMap = new HashMap<>();
     }
 

@@ -13,6 +13,8 @@
   "view.eiv.type.campfire": "Campfire Cooking",
   "eiv.fluid.unit": "mb",
   "commands.eiv.reloaded": "Reload success",
-  "key.eiv.toggle_overlay": "Toggle Overlay"
+  "key.eiv.toggle_overlay": "Toggle Overlay",
+  "eiv.bookmarks": "Bookmarks",
+  "key.eiv.bookmark": "Add Bookmark"
 
 }

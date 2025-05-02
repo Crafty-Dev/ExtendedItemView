@@ -107,6 +107,11 @@ public class YourCustomViewType implements IEivRecipeViewType {
     public ItemStack getIcon() {
         return null; //The icon displayed in the recipe-view
     }
+
+    @Override
+    public List<ItemStack> getCraftReferences() {
+        return List.of(); //Return a list of blocks/items that can be used to process your recipes (e.g. for Smelting it would be the furnace)
+    }
 }
 ```
 
@@ -258,3 +263,38 @@ Whenever there is an update the client is informed about the update and the mod 
 ## Conclusion
 
 And there you go! Just reproduce these steps for each of your recipe types and you'll be fine.
+If you now want to create item-transfer functionality, read the section below.
+
+## Adding recipe-transfer functionality
+
+To be able to shift items from the players inventory into it's crafting gui you have to override a few more methods of your class that implements `IEivViewRecipe`:
+
+```java
+
+    @Override
+    public boolean supportsItemTransfer() {
+        return true; //Enable item transfer
+    }
+
+    @Override
+    public Class<? extends AbstractContainerScreen<?>> getTransferClass() {
+        return CraftingScreen.class; //Tell which screen is the corresponding crafting gui
+    }
+
+    @Override
+    public void mapRecipeItems(RecipeTransferMap map) {
+
+	//Link your recipe slots to the corresponding slots in the destination inventory (the crafting inventory)
+
+        map.linkSlots(0, 1);
+        map.linkSlots(1, 2);
+        map.linkSlots(2, 3);
+        map.linkSlots(3, 4);
+        map.linkSlots(4, 5);
+        map.linkSlots(5, 6);
+        map.linkSlots(6, 7);
+        map.linkSlots(7, 8);
+        map.linkSlots(8, 9);
+
+    }
+```

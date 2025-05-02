@@ -22,7 +22,7 @@ public class EivTagUtil {
     }
 
     private static <T> List<T> reconstructRegistryList(CompoundTag srcTag, String key, DefaultedRegistry<T> registry) {
-        return srcTag.getList(key, Tag.TAG_STRING).stream().map(Tag::getAsString).map(s -> stringToRegistry(s, registry)).toList();
+        return srcTag.getList(key).stream().map(Tag::asString).map(s -> stringToRegistry(s.orElseThrow(), registry)).toList();
     }
 
 
@@ -72,7 +72,7 @@ public class EivTagUtil {
     }
 
     public static <T> List<T> readList(CompoundTag srcTag, String key, CompoundReconstructor<T> builder) {
-        return srcTag.getList(key, Tag.TAG_COMPOUND).stream().map(tag -> (CompoundTag) tag).map(builder::reconstructSingle).toList();
+        return srcTag.getList(key).stream().map(Tag::asCompound).map(compoundTag -> builder.reconstructSingle(compoundTag.orElseGet(CompoundTag::new))).toList();
     }
 
 

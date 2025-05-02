@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 public record ServerboundTransferPayload(HashMap<Integer, Integer> transferMap,
                                          HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots) implements CustomPacketPayload {
@@ -42,7 +43,7 @@ public record ServerboundTransferPayload(HashMap<Integer, Integer> transferMap,
 
             CompoundTag playerSlotsTag = new CompoundTag();
             usedSlots.forEach((playerSlot, stack) -> {
-                playerSlotsTag.put(String.valueOf(playerSlot), stack.saveOptional(Minecraft.getInstance().level.registryAccess()));
+                playerSlotsTag.put(String.valueOf(playerSlot), stack.save(Minecraft.getInstance().level.registryAccess()));
             });
 
             usedPlayerSlots.put(String.valueOf(recipeSlot), playerSlotsTag);
@@ -55,23 +56,23 @@ public record ServerboundTransferPayload(HashMap<Integer, Integer> transferMap,
     private static ServerboundTransferPayload decodeMap(CompoundTag encoded) {
 
         HashMap<Integer, Integer> transferMap = new HashMap<>();
-        CompoundTag encodedTransferMap = encoded.getCompound("transferMap");
+        CompoundTag encodedTransferMap = encoded.getCompound("transferMap").orElseGet(CompoundTag::new);
 
-        encodedTransferMap.getAllKeys().forEach(recipeSlot -> {
-            transferMap.put(Integer.valueOf(recipeSlot), encodedTransferMap.getInt(recipeSlot));
+        encodedTransferMap.keySet().forEach(recipeSlot -> {
+            transferMap.put(Integer.valueOf(recipeSlot), encodedTransferMap.getInt(recipeSlot).orElse(Integer.valueOf(recipeSlot)));
         });
 
         HashMap<Integer, HashMap<Integer, ItemStack>> usedPlayerSlots = new HashMap<>();
-        CompoundTag encodedUsedPlayerSlots = encoded.getCompound("usedPlayerSlots");
+        CompoundTag encodedUsedPlayerSlots = encoded.getCompound("usedPlayerSlots").orElseGet(CompoundTag::new);
 
-        encodedUsedPlayerSlots.getAllKeys().forEach(recipeSlot -> {
+        encodedUsedPlayerSlots.keySet().forEach(recipeSlot -> {
             HashMap<Integer, ItemStack> usedSlots = new HashMap<>();
 
-            CompoundTag playerSlotsTag = encodedUsedPlayerSlots.getCompound(recipeSlot);
-            playerSlotsTag.getAllKeys().forEach(playerSlot -> {
+            CompoundTag playerSlotsTag = encodedUsedPlayerSlots.getCompound(recipeSlot).orElseGet(CompoundTag::new);
+            playerSlotsTag.keySet().forEach(playerSlot -> {
 
-                ItemStack stack = ItemStack.parseOptional(ServerRecipeManager.INSTANCE.getServer().registryAccess(), playerSlotsTag.getCompound(playerSlot));
-                usedSlots.put(Integer.valueOf(playerSlot), stack);
+                Optional<ItemStack> stack = ItemStack.parse(ServerRecipeManager.INSTANCE.getServer().registryAccess(), playerSlotsTag.getCompound(playerSlot).orElseGet(CompoundTag::new));
+                usedSlots.put(Integer.valueOf(playerSlot), stack.orElseGet(ItemStack.EMPTY::copy));
             });
 
             usedPlayerSlots.put(Integer.valueOf(recipeSlot), usedSlots);

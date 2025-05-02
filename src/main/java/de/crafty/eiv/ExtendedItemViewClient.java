@@ -75,7 +75,6 @@ public class ExtendedItemViewClient implements ClientModInitializer {
         if (bookmarks.exists()) {
             try {
                 JsonObject contentJson = JsonParser.parseString(FileUtils.readFileToString(bookmarks, StandardCharsets.UTF_8)).getAsJsonObject();
-                System.out.println(contentJson);
                 ItemBookmarkOverlay.INSTANCE.loadBookmarkedItems(contentJson);
             } catch (Exception e) {
                 ExtendedItemView.LOGGER.error("Failed to load bookmarks from file, skipping...", e);

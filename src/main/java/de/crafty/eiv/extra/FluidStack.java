@@ -44,7 +44,7 @@ public class FluidStack {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         int amount = FluidStack.AMOUNT_FULL;
         if(tag.contains("fluidAmount"))
-            amount = tag.getInt("fluidAmount");
+            amount = tag.getInt("fluidAmount").orElseGet(() -> FluidStack.AMOUNT_FULL);
 
         return new FluidStack(fluidItem.getFluid(), amount);
     }

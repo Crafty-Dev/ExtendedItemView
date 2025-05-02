@@ -5,7 +5,8 @@ accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/m
 accessible field net/minecraft/world/item/crafting/Ingredient values Lnet/minecraft/core/HolderSet;
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
 accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/minecraft/world/item/ItemStack;
-accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe pattern Lnet/minecraft/core/Holder;
+accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
 
 accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
 

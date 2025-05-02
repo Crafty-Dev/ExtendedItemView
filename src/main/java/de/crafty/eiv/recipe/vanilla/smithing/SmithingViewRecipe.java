@@ -7,12 +7,18 @@ import de.crafty.eiv.recipe.inventory.SlotContent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.recipes.packs.VanillaRecipeProvider;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +39,7 @@ public class SmithingViewRecipe implements IEivViewRecipe {
         this.base = base;
         this.additionIngredient = smithingRecipe.additionIngredient().isPresent() ? SlotContent.of(smithingRecipe.additionIngredient().get()) : SlotContent.of(Items.AIR);
 
+
         if (Minecraft.getInstance().player == null) {
             this.result = SlotContent.of(Items.AIR);
             return;
@@ -40,11 +47,11 @@ public class SmithingViewRecipe implements IEivViewRecipe {
 
         HolderLookup.Provider provider = Minecraft.getInstance().player.clientLevel.registryAccess();
 
-        if (smithingRecipe instanceof SmithingTrimRecipe) {
+        if (smithingRecipe instanceof SmithingTrimRecipe trimRecipe) {
             List<ItemStack> possibleResults = new ArrayList<>();
 
             this.additionIngredient.getValidContents().forEach(addition -> {
-                possibleResults.add(SmithingTrimRecipe.applyTrim(provider, this.base, addition, this.template));
+                possibleResults.add(SmithingTrimRecipe.applyTrim(provider, this.base, addition, trimRecipe.pattern));
             });
 
             this.result = SlotContent.of(possibleResults);
@@ -53,7 +60,7 @@ public class SmithingViewRecipe implements IEivViewRecipe {
         }
 
         if (smithingRecipe instanceof SmithingTransformRecipe transformRecipe) {
-            this.result = SlotContent.of(transformRecipe.result);
+            this.result = SlotContent.of(transformRecipe.result.apply(this.base));
             return;
         }
 

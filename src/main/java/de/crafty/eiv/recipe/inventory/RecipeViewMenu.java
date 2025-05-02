@@ -294,7 +294,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
 
         LocalPlayer player = minecraft.player;
 
-        NonNullList<ItemStack> playerInvCache = NonNullList.withSize(player.getInventory().items.size(), ItemStack.EMPTY);
+        NonNullList<ItemStack> playerInvCache = NonNullList.withSize(player.getInventory().getNonEquipmentItems().size(), ItemStack.EMPTY);
         for (int slot = 0; slot < playerInvCache.size(); slot++)
             playerInvCache.set(slot, player.getInventory().getItem(slot).copy());
 

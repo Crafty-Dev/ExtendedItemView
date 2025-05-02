@@ -49,12 +49,11 @@ public class BuiltInEivIntegration implements IExtendedItemViewIntegration {
             if (vanillaLike instanceof SmithingRecipe smithingRecipe) {
                 if (smithingRecipe.templateIngredient().isPresent()) {
                     SlotContent.of(smithingRecipe.templateIngredient().get()).getValidContents().forEach(templateStack -> {
-                        if(smithingRecipe.baseIngredient().isPresent()){
-                            SlotContent.of(smithingRecipe.baseIngredient().get()).getValidContents().forEach(baseStack -> {
-                                recipes.add(new SmithingViewRecipe(smithingRecipe, baseStack, templateStack));
-                            });
 
-                        }
+                        SlotContent.of(smithingRecipe.baseIngredient()).getValidContents().forEach(baseStack -> {
+                            recipes.add(new SmithingViewRecipe(smithingRecipe, baseStack, templateStack));
+                        });
+
                     });
                 }
             }
@@ -63,7 +62,6 @@ public class BuiltInEivIntegration implements IExtendedItemViewIntegration {
         });
 
         ItemViewRecipes.INSTANCE.registerVanillaLikeWrapper(RecipeType.CAMPFIRE_COOKING, vanillaLike -> List.of(new CampfireViewRecipe((CampfireCookingRecipe) vanillaLike)));
-
 
 
     }

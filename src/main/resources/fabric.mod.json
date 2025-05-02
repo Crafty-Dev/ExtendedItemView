@@ -1,40 +1,39 @@
 {
-	"schemaVersion": 1,
-	"id": "eiv",
-	"version": "${version}",
-	"name": "Extended ItemView",
-	"description": "A mod all around simplifying your life by showing you the recipes you need! :D",
-	"authors": [
-		"2Bad4Mods"
-	],
-	"contact": {
-
-	},
-	"license": "MIT",
-	"icon": "assets/eiv/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"de.crafty.eiv.ExtendedItemView"
-		],
-		"client": [
-			"de.crafty.eiv.ExtendedItemViewClient"
-		],
-		"eiv": [
-			"de.crafty.eiv.BuiltInEivIntegration"
-		]
-	},
-	"mixins": [
-		"eiv.mixins.json"
-	],
-	"accessWidener": "eiv.accesswidener",
-	"depends": {
-		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.21.4",
-		"java": ">=21",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+  "schemaVersion": 1,
+  "id": "eiv",
+  "version": "${version}",
+  "name": "Extended ItemView",
+  "description": "A mod all around simplifying your life by showing you the recipes you need! :D",
+  "authors": [
+    "2Bad4Mods"
+  ],
+  "contact": {
+  },
+  "license": "MIT",
+  "icon": "assets/eiv/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "de.crafty.eiv.ExtendedItemView"
+    ],
+    "client": [
+      "de.crafty.eiv.ExtendedItemViewClient"
+    ],
+    "eiv": [
+      "de.crafty.eiv.BuiltInEivIntegration"
+    ]
+  },
+  "mixins": [
+    "eiv.mixins.json"
+  ],
+  "accessWidener": "eiv.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
 }

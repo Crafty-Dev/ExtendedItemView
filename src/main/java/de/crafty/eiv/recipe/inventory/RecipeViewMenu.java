@@ -451,7 +451,7 @@ public class RecipeViewMenu extends AbstractContainerMenu {
         if (currentSlotIndex >= slots.size() || bestMatch.size() == slots.size())
             return;
 
-        List<ItemStack> validStacks = validAndAvailableContent.get(slots.get(currentSlotIndex));
+        List<ItemStack> validStacks = validAndAvailableContent.getOrDefault(slots.get(currentSlotIndex), new ArrayList<>());
 
         for (ItemStack requiredStack : validStacks) {
 

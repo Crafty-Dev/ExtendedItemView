@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemSlot {
@@ -36,7 +37,7 @@ public class ItemSlot {
         this.hovered = this.isMouseOver(mouseX, mouseY);
 
         Minecraft mc = Minecraft.getInstance();
-        List<Component> tooltip = Screen.getTooltipFromItem(mc, this.stack);
+        List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(mc, this.stack));
 
         String modId = BuiltInRegistries.ITEM.getKey(this.stack.getItem()).getNamespace();
         FabricLoader.getInstance().getModContainer(modId).ifPresent(container -> {
@@ -61,6 +62,7 @@ public class ItemSlot {
 
         if(clientPlayer == null)
             return;
+
 
 
         if(mouseButton == 0)

@@ -6,7 +6,7 @@ import de.crafty.eiv.servercompat.util.EivCompatTagUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.TransmuteResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import org.bukkit.inventory.RecipeChoice;
 import org.jetbrains.annotations.Nullable;
@@ -22,9 +22,9 @@ public class CompatSmithingRecipe implements IEivCompatServerRecipe {
     private RecipeChoice base, template, addition;
     private TrimPattern pattern;
 
-    private TransmuteResult upgradeResult;
+    private ItemStack upgradeResult;
 
-    public CompatSmithingRecipe(boolean isTrim, RecipeChoice base, RecipeChoice template, RecipeChoice addition, TrimPattern pattern, @Nullable TransmuteResult upgradeResult) {
+    public CompatSmithingRecipe(boolean isTrim, RecipeChoice base, RecipeChoice template, RecipeChoice addition, TrimPattern pattern, @Nullable ItemStack upgradeResult) {
         this.isTrim = isTrim;
         this.base = base;
         this.template = template;
@@ -47,7 +47,7 @@ public class CompatSmithingRecipe implements IEivCompatServerRecipe {
             tag.put("pattern", TrimPattern.DIRECT_CODEC.encode(this.pattern, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
 
         if(this.upgradeResult != null)
-            tag.put("upgradeResult", TransmuteResult.CODEC.encode(this.upgradeResult, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
+            tag.put("upgradeResult", EivCompatTagUtil.encodeItemStackOnServer(this.upgradeResult));
     }
 
     @Override

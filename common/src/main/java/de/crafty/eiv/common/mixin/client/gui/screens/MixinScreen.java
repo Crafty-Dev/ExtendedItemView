@@ -58,7 +58,7 @@ public abstract class MixinScreen extends AbstractContainerEventHandler implemen
 
     @Redirect(method = "getTooltipFromItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/item/Item$TooltipContext;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"), remap = false)
     private static List<Component> appendRecipeTag(ItemStack stack, Item.TooltipContext list, @Nullable Player player, TooltipFlag flag) {
-        List<Component> tooltip = stack.getTooltipLines(list, player, flag);
+        List<Component> tooltip = new java.util.ArrayList<>(stack.getTooltipLines(list, player, flag));
         CompoundTag tagTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (tagTag.contains(CommonEIV.MODID + "_recipeTag")) {
             tooltip.add(

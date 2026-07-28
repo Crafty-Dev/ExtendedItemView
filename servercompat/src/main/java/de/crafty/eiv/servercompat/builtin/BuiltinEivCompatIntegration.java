@@ -23,7 +23,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.TransmuteResult;
+
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -174,13 +174,13 @@ public class BuiltinEivCompatIntegration implements IEivCompatIntegration {
                 BuiltInRegistries.ITEM.forEach(item -> {
 
                     if(potionBrewing.hasMix(potionStack, new ItemStack(item)))
-                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), potionStack), CraftRecipe.toBukkit(Ingredient.of(item)), potionStack));
+                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), potionStack), CraftRecipe.toChoice(Ingredient.of(item)), potionStack));
 
                     if(potionBrewing.hasMix(splashStack, new ItemStack(item)))
-                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), splashStack), CraftRecipe.toBukkit(Ingredient.of(item)), splashStack));
+                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), splashStack), CraftRecipe.toChoice(Ingredient.of(item)), splashStack));
 
                     if(potionBrewing.hasMix(lingeringStack, new ItemStack(item)))
-                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), lingeringStack), CraftRecipe.toBukkit(Ingredient.of(item)), lingeringStack));
+                        recipeList.add(new CompatBrewingRecipe(potionBrewing.mix(new ItemStack(item), lingeringStack), CraftRecipe.toChoice(Ingredient.of(item)), lingeringStack));
 
                 });
             });
@@ -217,7 +217,7 @@ public class BuiltinEivCompatIntegration implements IEivCompatIntegration {
                     recipeList.add(new CompatSmithingRecipe(true, trimRecipe.getBase(), trimRecipe.getTemplate(), trimRecipe.getAddition(), CraftTrimPattern.bukkitToMinecraftHolder(trimRecipe.getTrimPattern()).value(), null));
 
                 if(recipe instanceof SmithingTransformRecipe transformRecipe)
-                    recipeList.add(new CompatSmithingRecipe(false, transformRecipe.getBase(), transformRecipe.getTemplate(), transformRecipe.getAddition(), null, new TransmuteResult(CraftItemStack.asNMSCopy(transformRecipe.getResult()).getItem())));
+                    recipeList.add(new CompatSmithingRecipe(false, transformRecipe.getBase(), transformRecipe.getTemplate(), transformRecipe.getAddition(), null, CraftItemStack.asNMSCopy(transformRecipe.getResult())));
 
             });
 

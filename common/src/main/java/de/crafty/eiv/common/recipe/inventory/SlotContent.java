@@ -159,8 +159,9 @@ public class SlotContent {
 
             boolean potionCheck = ItemViewRecipes.makePotionCheck(origin, stack);
             boolean enchantCheck = ItemViewRecipes.makeEnchantmentCheck(origin, stack);
+            boolean stackSensitiveCheck = ItemViewRecipes.makeStackSensitiveCheck(origin, stack);
 
-            if (potionCheck && enchantCheck)
+            if (potionCheck && enchantCheck && stackSensitiveCheck)
                 return index;
         }
 

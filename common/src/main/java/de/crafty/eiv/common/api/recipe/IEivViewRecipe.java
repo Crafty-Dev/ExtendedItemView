@@ -74,8 +74,9 @@ public interface IEivViewRecipe {
 
         boolean potionRedirectCheck = ItemViewRecipes.makePotionRedirectCheck(stack, this.getIngredients());
         boolean enchantmentRedirectCheck = ItemViewRecipes.makeEnchantedRedirectCheck(stack, this.getIngredients());
+        boolean stackSensitiveRedirectCheck = ItemViewRecipes.makeStackSensitiveRedirectCheck(stack, this.getIngredients());
 
-        return potionRedirectCheck && enchantmentRedirectCheck;
+        return potionRedirectCheck && enchantmentRedirectCheck && stackSensitiveRedirectCheck;
     }
 
     /**
@@ -85,8 +86,9 @@ public interface IEivViewRecipe {
     default boolean redirectsAsResult(ItemStack stack) {
         boolean potionRedirectCheck = ItemViewRecipes.makePotionRedirectCheck(stack, this.getResults());
         boolean enchantmentRedirectCheck = ItemViewRecipes.makeEnchantedRedirectCheck(stack, this.getResults());
+        boolean stackSensitiveRedirectCheck = ItemViewRecipes.makeStackSensitiveRedirectCheck(stack, this.getResults());
 
-        return potionRedirectCheck && enchantmentRedirectCheck;
+        return potionRedirectCheck && enchantmentRedirectCheck && stackSensitiveRedirectCheck;
     }
 
     /**

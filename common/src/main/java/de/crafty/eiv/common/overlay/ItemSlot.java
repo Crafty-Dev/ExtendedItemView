@@ -77,17 +77,16 @@ public class ItemSlot {
             guiGraphicsExtractor.fill(this.x, this.y, this.x + 20, this.y + 20, new Color(255, 255, 255, 32).getRGB());
 
 
-        long currentGameTime = Minecraft.getInstance().level.getGameTime();
+        long currentGameTime = mc.level.getGameTime();
 
         guiGraphicsExtractor.pose().pushMatrix();
         guiGraphicsExtractor.pose().translate(this.x + 2, this.y + 2);
         if(this.timeAdded >= 0)
-            guiGraphicsExtractor.pose().scale(1.5F - 0.5F * (Math.min((currentGameTime + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks() - this.timeAdded) / 1.75F, 1.0F)));
+            guiGraphicsExtractor.pose().scale(1.5F - 0.5F * (Math.min((currentGameTime + mc.getDeltaTracker().getGameTimeDeltaTicks() - this.timeAdded) / 1.75F, 1.0F)));
 
         guiGraphicsExtractor.item(this.stack, 0, 0);
         guiGraphicsExtractor.pose().popMatrix();
-
-
+        
         if (this.isHovered())
             guiGraphicsExtractor.setComponentTooltipForNextFrame(mc.font, tooltip, mouseX, mouseY);
     }

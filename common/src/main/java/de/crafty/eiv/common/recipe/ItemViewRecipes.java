@@ -3,12 +3,17 @@ package de.crafty.eiv.common.recipe;
 import de.crafty.eiv.common.api.recipe.EivRecipeType;
 import de.crafty.eiv.common.api.recipe.IEivServerRecipe;
 import de.crafty.eiv.common.api.recipe.IEivViewRecipe;
+import de.crafty.eiv.common.CommonEIV;
 import de.crafty.eiv.common.recipe.inventory.SlotContent;
+import de.crafty.eiv.common.recipe.ClientRecipeCache;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.material.Fluid;
 
@@ -168,6 +173,80 @@ public class ItemViewRecipes {
         return enchantments.keySet().stream().allMatch(enchantment -> {
             return stackEnchantments.getLevel(enchantment) == enchantments.getLevel(enchantment);
         }) && stackEnchantments.size() == enchantments.size();
+    }
+
+    public static boolean isNbtSubset(CompoundTag template, CompoundTag target) {
+        if (template == null && target == null)
+            return true;
+        if (template == null || target == null)
+            return false;
+
+        for (String key : template.keySet()) {
+            if (!target.contains(key))
+                return false;
+
+            Tag templateTag = template.get(key);
+            Tag targetTag = target.get(key);
+            if (templateTag == null || targetTag == null)
+                return false;
+
+            if (templateTag.getId() != targetTag.getId())
+                return false;
+
+            if (templateTag.getId() == 10) { // CompoundTag
+                if (!isNbtSubset((CompoundTag) templateTag, (CompoundTag) targetTag))
+                    return false;
+            } else {
+                if (!templateTag.equals(targetTag))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean makeStackSensitiveCheck(ItemStack stack1, ItemStack stack2) {
+        if (stack1.getItem() != stack2.getItem())
+            return false;
+
+        CompoundTag tag1 = stack1.has(DataComponents.CUSTOM_DATA) ? stack1.get(DataComponents.CUSTOM_DATA).copyTag() : null;
+        CompoundTag tag2 = stack2.has(DataComponents.CUSTOM_DATA) ? stack2.get(DataComponents.CUSTOM_DATA).copyTag() : null;
+
+        if (tag1 != null) {
+            tag1.remove(CommonEIV.MODID + "_recipeTag");
+            if (tag1.isEmpty())
+                tag1 = null;
+        }
+        if (tag2 != null) {
+            tag2.remove(CommonEIV.MODID + "_recipeTag");
+            if (tag2.isEmpty())
+                tag2 = null;
+        }
+
+        if (tag1 == null && tag2 == null)
+            return true;
+
+        if (tag1 == null || tag2 == null)
+            return false;
+
+        return isNbtSubset(tag2, tag1);
+    }
+
+    public static boolean makeStackSensitiveRedirectCheck(ItemStack stack, List<SlotContent> slotContents) {
+        if (ClientRecipeCache.INSTANCE.getStackSensitives(stack.getItem()).isEmpty()) {
+            return true;
+        }
+
+        for (SlotContent slotContent : slotContents) {
+            for (ItemStack validStack : slotContent.getValidContents()) {
+                if (!stack.is(validStack.getItem()))
+                    continue;
+
+                if (ItemViewRecipes.makeStackSensitiveCheck(stack, validStack))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
 

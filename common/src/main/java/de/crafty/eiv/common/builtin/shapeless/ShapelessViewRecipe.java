@@ -8,6 +8,8 @@ import de.crafty.eiv.common.recipe.inventory.SlotContent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +22,15 @@ public class ShapelessViewRecipe implements IEivViewRecipe {
     public ShapelessViewRecipe(ShapelessServerRecipe shapelessRecipe) {
         this.ingredients = new ArrayList<>();
 
-        shapelessRecipe.getIngredients().forEach(ingredient -> {
-            this.ingredients.add(SlotContent.of(ingredient));
-        });
+        for (int i = 0; i < shapelessRecipe.getIngredients().size(); i++) {
+            Ingredient ingredient = shapelessRecipe.getIngredients().get(i);
+            List<ItemStack> exact = shapelessRecipe.getExactIngredients() != null && i < shapelessRecipe.getExactIngredients().size() ? shapelessRecipe.getExactIngredients().get(i) : null;
+            if (exact != null && !exact.isEmpty()) {
+                this.ingredients.add(SlotContent.of(exact));
+            } else {
+                this.ingredients.add(SlotContent.of(ingredient));
+            }
+        }
 
         this.result = SlotContent.of(shapelessRecipe.getResult());
     }

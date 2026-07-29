@@ -15,7 +15,7 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'java-library'
 
-    if (project.name != "common") {
+    if (project.name != "common" && project.name != "servercompat") {
         configurations {
             commonJava {
                 canBeResolved = true

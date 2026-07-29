@@ -56,6 +56,16 @@ public class EivCompatTagUtil {
         if (choice == null)
             return new CompoundTag();
 
+        if (choice instanceof RecipeChoice.ExactChoice exactChoice) {
+            CompoundTag tag = new CompoundTag();
+            ListTag list = new ListTag();
+            for (org.bukkit.inventory.ItemStack stack : exactChoice.getChoices()) {
+                list.add(EivCompatTagUtil.encodeItemStackOnServer(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(stack)));
+            }
+            tag.put("exact_stacks", list);
+            return tag;
+        }
+
         //Convert to ingredient
         Ingredient ingredient = CraftRecipe.toIngredient(choice, false);
 

@@ -30,7 +30,14 @@ public class CraftingViewRecipe implements IEivViewRecipe {
         this.width = recipe.getWidth();
         this.height = recipe.getHeight();
 
-        recipe.getIngredients().forEach((slotId, ingredient) -> this.ingredientSlotContents.put(slotId, SlotContent.of(ingredient)));
+        recipe.getIngredients().forEach((slotId, ingredient) -> {
+            List<ItemStack> exact = recipe.getExactIngredients() != null ? recipe.getExactIngredients().get(slotId) : null;
+            if (exact != null && !exact.isEmpty()) {
+                this.ingredientSlotContents.put(slotId, SlotContent.of(exact));
+            } else {
+                this.ingredientSlotContents.put(slotId, SlotContent.of(ingredient));
+            }
+        });
         this.result = SlotContent.of(recipe.getResult());
 
     }

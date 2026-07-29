@@ -122,8 +122,11 @@ public abstract class AbstractEivItemListOverlay extends AbstractEivOverlay {
         }
 
         this.fittingPerPage = currentStackPos - this.startIndex;
-        if(updateType == SlotUpdateType.ADDED && ItemStack.isSameItemSameComponents(this.availableItems.getLast(), this.itemSlots().getLast().getStack()))
-            this.itemSlots().getLast().setTimeAdded(Minecraft.getInstance().level.getGameTime());
+        if (updateType == SlotUpdateType.ADDED && !this.itemSlots().isEmpty()) {
+            ItemSlot lastSlot = this.itemSlots().getLast();
+            if (ItemStack.isSameItemSameComponents(this.availableItems.getLast(), lastSlot.getStack()))
+                lastSlot.setTimeAdded(Minecraft.getInstance().level.getGameTime());
+        }
     }
 
 
